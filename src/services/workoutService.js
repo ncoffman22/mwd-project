@@ -13,7 +13,7 @@ const workoutService = {
         const workouts = results.map((result) => result.toJSON());
         console.log("Loaded workouts from Parse:", workouts);
         localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
-        return userWorkouts;
+        return workouts;
       } else {
         console.log("No workouts found for user:", username);
         return [];
