@@ -22,7 +22,7 @@ import workoutService from "./services/workoutService";
 
 
 Parse.initialize(ENV.APPLICATION_ID, ENV.JAVASCRIPT_KEY);
-Parse.serverURL(ENV.SERVER_URL);
+Parse.serverURL = ENV.SERVER_URL;
 
 function App() {
   // two use states: one for the user, one for their workouts
