@@ -1,41 +1,70 @@
 import Parse from "parse";
+
 const authService = {
-  // login method
   login: async (username, password) => {
+    if (!username || !password) {
+      throw new Error("Username and password are required");
+    }
+
     try {
-      // get user from json
-      let user = await Parse.User.logIn(username, password);
-      console.log('Logged in user:', user);
-      localStorage.setItem("user", JSON.stringify(user));
-      const userData = { username: user.username, password: user.password };
+      const user = await Parse.User.logIn(username.trim(), password);
+      if (!user) {
+        throw new Error("Login succeeded but no user was returned");
+      }
+
+      const userData = {
+        username: user.get("username"),
+        objectId: user.id,
+        // Add any other user properties you need
+      };
+      
+      localStorage.setItem("user", JSON.stringify(userData));
       return userData;
     } catch (error) {
-      console.error("Login failed:", error);
+      if (error.code === Parse.Error.OBJECT_NOT_FOUND) {
+        throw new Error("Invalid username or password");
+      }
       throw error;
     }
   },
 
-  // registration method
   register: async (username, password) => {
-      const user = new Parse.User();
-      user.set("username", username);
-      user.set("password", password);
-      try {
-        let userResult = await user.signUp();
-        console.log('Registered user:', userResult);
-        const newUser = { username, password };
-        localStorage.setItem("user", JSON.stringify(newUser));
-        return newUser;
-      } catch (error) {
-        console.error("Registration failed:", error);
-      }
+    if (!username || !password) {
+      throw new Error("Username and password are required");
+    }
 
+    const user = new Parse.User();
+    user.set("username", username.trim());
+    user.set("password", password);
+    
+    try {
+      const userResult = await user.signUp();
+      
+      const userData = {
+        username: userResult.get("username"),
+        objectId: userResult.id,
+        // Add any other user properties you need
+      };
+      
+      localStorage.setItem("user", JSON.stringify(userData));
+      return userData;
+    } catch (error) {
+      if (error.code === Parse.Error.USERNAME_TAKEN) {
+        throw new Error("Username is already taken");
+      }
+      throw error;
+    }
   },
 
-  // returns the current user
   getCurrentUser: () => {
-    const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    try {
+      const userString = localStorage.getItem("user");
+      return userString ? JSON.parse(userString) : null;
+    } catch (error) {
+      console.error("Error getting current user:", error);
+      localStorage.removeItem("user");
+      return null;
+    }
   },
 };
 

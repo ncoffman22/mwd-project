@@ -49,14 +49,12 @@ function App() {
   // handler for logging in that sets the user and loads the workouts for that user.
   const handleLogin = async (userData) => {
     try {
-      const user = await authService.login(
-        userData.username,
-        userData.password
-      );
-      setUser(user);
-      loadUserWorkouts(user.username);
+      console.log("App received login data:", userData);
+      setUser(userData);
+      await loadUserWorkouts(userData.username);
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Error in handleLogin:", error);
+      setUser(null); // Reset user state in case of error
     }
   };
 

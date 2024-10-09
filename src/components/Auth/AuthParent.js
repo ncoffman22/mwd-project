@@ -1,3 +1,4 @@
+// AuthParent.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
@@ -8,38 +9,41 @@ export default function AuthParent({ onLogin, onRegister }) {
     username: "",
     password: "",
   });
-
+  const [error, setError] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
-  // Handle changes to an individual's credentials
   const handleChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    setCredentials({ ...credentials, [e.target.name]: e.target.value.trim() });
   };
 
-  // Process a submission and either authenticate or register based on which page
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Clear any previous errors
+    
     try {
+      if (!credentials.username || !credentials.password) {
+        throw new Error("Username and password are required");
+      }
+
       let user;
       if (isLogin) {
-        // Call service to see if username and password are correct
         user = await authService.login(
           credentials.username,
           credentials.password
         );
-        onLogin(user); // Pass the entire user object
+        onLogin(user);
       } else {
-        // Register a new user if they do not currently exist
         user = await authService.register(
           credentials.username,
           credentials.password
         );
-        onRegister(user); // Pass the entire user object
+        onRegister(user);
       }
       navigate("/");
     } catch (error) {
-      console.log(isLogin ? "Login failed:" : "Registration failed:", error);
+      setError(error.message);
+      console.error(isLogin ? "Login failed:" : "Registration failed:", error);
     }
   };
 
@@ -50,6 +54,7 @@ export default function AuthParent({ onLogin, onRegister }) {
       onSubmit={handleSubmit}
       isLogin={isLogin}
       setIsLogin={setIsLogin}
+      error={error}
     />
   );
 }

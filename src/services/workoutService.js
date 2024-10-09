@@ -1,4 +1,8 @@
 import { Parse } from "parse";
+import * as ENV from "../environments.js"
+
+Parse.initialize(ENV.APPLICATION_ID, ENV.JAVASCRIPT_KEY);
+Parse.serverURL = ENV.SERVER_URL;
 
 const workoutService = {
     // This loads everything from the json file and saves it in local storage
