@@ -10,12 +10,6 @@ import {
 } from 'react-router-dom';
 import { Container } from "react-bootstrap";
 
-
-
-
-Parse.initialize(ENV.APPLICATION_ID, ENV.JAVASCRIPT_KEY);
-Parse.serverURL(ENV.SERVER_URL);
-
 // imports for components and services
 import NavigationContainer from "./components/Navigation/NavigationContainer";
 import DashboardContainer from "./components/Dashboard/DashboardContainer";
@@ -24,6 +18,11 @@ import AddWorkoutContainer from "./components/AddWorkout/AddWorkoutContainer";
 import AuthContainer from "./components/Auth/AuthContainer";
 import authService from "./services/authService";
 import workoutService from "./services/workoutService";
+
+
+
+Parse.initialize(ENV.APPLICATION_ID, ENV.JAVASCRIPT_KEY);
+Parse.serverURL(ENV.SERVER_URL);
 
 function App() {
   // two use states: one for the user, one for their workouts
