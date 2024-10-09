@@ -1,27 +1,25 @@
-import axios from "axios";
+import { Parse } from "parse";
 
 const workoutService = {
-  // This loads everything from the json file and saves it in local storage
+    // This loads everything from the json file and saves it in local storage
   loadWorkoutsFromFile: async (username) => {
     try {
-      // pull the json data
-      const response = await axios.get("/data/usersWorkouts.json");
-      const userWorkouts = response.data[username];
+      const Workouts = Parse.Object.extend("Workouts");
+      const query = new Parse.Query(Workouts);
+      query.equalTo("user", username);
+      const results = await query.find();
 
-      // if there are no workouts, throw this error—may need to not do this, but it's good for bug checking rn
-      if (!userWorkouts) {
-        throw new Error(`No workouts for this user ${username}`);
+      if (results.length > 0) {
+        const workouts = results.map((result) => result.toJSON());
+        console.log("Loaded workouts from Parse:", workouts);
+        localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
+        return userWorkouts;
+      } else {
+        console.log("No workouts found for user:", username);
+        return [];
       }
-      // set everything into localstorage for using in the getworkouts method.
-      // This was my solution to ensure we could list workouts that a user adds combined with the workouts pulled
-      // from the json data
-      localStorage.setItem(
-        `workouts_${username}`,
-        JSON.stringify(userWorkouts)
-      );
-      return userWorkouts; // Return the loaded workouts
     } catch (error) {
-      console.error("Failed to load workouts:", error);
+      console.error("Failed to load workouts from Parse:", error);
       throw error;
     }
   },
@@ -43,20 +41,26 @@ const workoutService = {
 
   // This gets the workouts for a user from local storage and adds one
   addWorkout: async (username, workout) => {
-    try {
-      // pull workouts in local storage
-      const workouts =
-        JSON.parse(localStorage.getItem(`workouts_${username}`)) || [];
+      const myNewObject = new Parse.Object("Workouts");
+      myNewObject.set("user", username);
+      myNewObject.set('liftType', workout.liftType);
+      myNewObject.set('sets', workout.sets);
+      myNewObject.set('reps', workout.reps);
+      myNewObject.set('weight', workout.weight);
+      myNewObject.set('date', workout.date);
+      try {
+        const result = await myNewObject.save();
+        console.log('Workout added:', result);
 
-      // push the new workout onto it
-      workouts.push(workout);
-      localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
-      return workouts;
-    } catch (error) {
-      // same thing as above
+        const workouts =
+        JSON.parse(localStorage.getItem(`workouts_${username}`)) || [];
+        workouts.push(workout);
+        localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
+        return workouts;
+      } catch (error) {
       console.error("Failed to add workout:", error);
       throw error;
-    }
+      }
   },
 };
 
