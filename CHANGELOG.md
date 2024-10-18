@@ -5,8 +5,8 @@
 
 - services/splitService.js
 
-  **1.0.0 - 2024-10-09**
-  **ADDED**
+**1.0.0 - 2024-10-09**
+**ADDED**
 
 - Created React App
 - components
