@@ -18,7 +18,7 @@ import AddWorkoutContainer from "./components/AddWorkout/AddWorkoutContainer";
 import AuthContainer from "./components/Auth/AuthContainer";
 import authService from "./services/authService";
 import workoutService from "./services/workoutService";
-
+import AddSplitContainer from "./components/AddSplit/AddSplitContainer";
 
 // Only do one parse initialization in the app.js
 Parse.initialize(ENV.APPLICATION_ID, ENV.JAVASCRIPT_KEY);
@@ -141,6 +141,16 @@ function App() {
               element={
                 user ? (
                   <WorkoutsContainer user={user} workouts={workouts} />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/add-split"
+              element={
+                user ? (
+                  <AddSplitContainer user={user} />
                 ) : (
                   <Navigate to="/login" replace />
                 )

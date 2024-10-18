@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AddWorkoutChild from "./AddWorkoutChild";
 import SplitSelectorChild from "./SplitSelectorChild";
-import AddSplitChild from "./AddSplitChild";
 import splitService from "../../services/splitService";
 import { useEffect } from "react";
 
@@ -16,11 +15,10 @@ export default function AddWorkoutParent({ onAddWorkout, user }) {
   });
   const [split, setSplit] = useState([]);
   const [selectedSplit, setSelectedSplit] = useState("");
-  const [showAddSplitForm, setShowAddSplitForm] = useState(false);
 
   useEffect(() => {
     const loadSplits = async () => {
-      const fetchedSplits = await splitService.loadSplits(user);
+      const fetchedSplits = await splitService.loadSplits(user.username);
       setSplit(fetchedSplits);
     };
     loadSplits();
@@ -47,6 +45,7 @@ export default function AddWorkoutParent({ onAddWorkout, user }) {
       reps: parseInt(workout.reps),
       weight: parseFloat(workout.weight),
       splitID: selectedSplit,
+      liftType: workout.name,
     };
     // Add the workout
     onAddWorkout(newWorkout);
@@ -62,40 +61,20 @@ export default function AddWorkoutParent({ onAddWorkout, user }) {
     navigate("/workouts"); // Send to workout page
   };
 
-  const handleAddNewSplit = async (newSplit) => {
-    try {
-      const addedSplit = await splitService.addSplit(user, newSplit);
-      setSplit((prevSplits) => [...prevSplits, addedSplit]);
-      setSelectedSplit(addedSplit.id);
-      setShowAddSplitForm(false);
-    } catch (error) {
-      console.error("Failed to add new split:", error);
-      alert("Failed to add new split");
-    }
-  };
+
   return (
     <>
-      {showAddSplitForm ? (
-        <AddSplitChild
-          onAddSplit={handleAddNewSplit}
-          onCancel={() => setShowAddSplitForm(false)}
+        <SplitSelectorChild
+          split={split}
+          selectedSplit={selectedSplit}
+          onSelectSplit={setSelectedSplit}
         />
-      ) : (
-        <>
-          <SplitSelectorChild
-            split={split}
-            selectedSplit={selectedSplit}
-            onSelectSplit={setSelectedSplit}
-            onAddNewSplitClick={() => setShowAddSplitForm(true)}
-          />
-          <hr />
-          <AddWorkoutChild
-            workout={workout}
-            onChange={handleChange}
-            onSubmit={handleSubmit}
-          />
-        </>)
-        }
+        <hr />
+        <AddWorkoutChild
+          workout={workout}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+        />
     </>
   );
 }

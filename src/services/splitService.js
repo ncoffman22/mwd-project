@@ -38,17 +38,17 @@ const splitService = {
     // This adds a new split to the Parse database
     addSplit: async (username, split) => {
         const myNewObject = new Parse.Object("Splits");
+        const splitDate = new Date(split.date);
         myNewObject.set("user", username);
-        myNewObject.set('split_title', split.split_title);
-        myNewObject.set('date', split.date);
-        myNewObject.set('workout_1', split.workout_1);
-        myNewObject.set('workout_2', split.workout_2);
-        myNewObject.set('workout_3', split.workout_3);
-        myNewObject.set('workout_4', split.workout_4);
-        myNewObject.set('workout_5', split.workout_5);
-        myNewObject.set('workout_6', split.workout_6);
-        myNewObject.set('workout_7', split.workout_7);
-        myNewObject.set('workout_8', split.workout_8);
+        myNewObject.set('split_title', split.title);
+        myNewObject.set('date', splitDate);
+
+        for (let i = 1; i <= 8; i++) {
+            if (split[`workout_${i}`]) {
+                const workoutPointer = Parse.Object.extend("Workouts").createWithoutData(split[`workout_${i}`]);
+                myNewObject.set(`workout_${i}`, workoutPointer);
+            }
+        }
         try {
             const result = await myNewObject.save();
             console.log('Split added:', result);

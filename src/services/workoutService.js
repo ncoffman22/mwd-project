@@ -43,12 +43,13 @@ const workoutService = {
   // This adds a new workout to the Parse database
   addWorkout: async (username, workout) => {
       const myNewObject = new Parse.Object("Workouts");
+      const workoutDate = new Date(workout.date);
       myNewObject.set("user", username);
-      myNewObject.set('liftType', workout.liftType);
+      myNewObject.set('liftType', workout.name);
       myNewObject.set('sets', workout.sets);
       myNewObject.set('reps', workout.reps);
       myNewObject.set('weight', workout.weight);
-      myNewObject.set('date', workout.date);
+      myNewObject.set('date', workoutDate);
       try {
         const result = await myNewObject.save();
         console.log('Workout added:', result);

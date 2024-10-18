@@ -33,6 +33,16 @@ export default function NavigationParent({ user, onLogout }) {
             </Nav.Link>
           </Nav>
           <Nav>
+            <Nav.Link
+              as={Link}
+              to="/add-split"
+              active={location.pathname === "/add-split"}
+            >
+              Add Split
+            </Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+          <Nav>
             {user ? (
               <Button variant="outline-primary" onClick={onLogout}>
                 Logout
@@ -49,7 +59,6 @@ export default function NavigationParent({ user, onLogout }) {
               </>
             )}
           </Nav>
-        </Navbar.Collapse>
       </Container>
     </Navbar>
   );

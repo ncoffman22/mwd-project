@@ -19,8 +19,8 @@ export default function DashboardChild({ workouts = [] }) {
           {workouts.length > 0 ? (
             workouts.map((workout, index) => (
               <ListGroup.Item key={index}>
-                {workout.name || "Unnamed Workout}"} -{" "}
-                {workout.date || "No Date"}
+                {workout.liftType || "Unnamed Workout}"} -{" "}
+                {workout.reps || "XX"} x {workout.sets || "XX"}
               </ListGroup.Item>
             ))
           ) : (
