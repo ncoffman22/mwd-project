@@ -20,7 +20,7 @@ import authService from "./services/authService";
 import workoutService from "./services/workoutService";
 
 
-
+// Only do one parse initialization in the app.js
 Parse.initialize(ENV.APPLICATION_ID, ENV.JAVASCRIPT_KEY);
 Parse.serverURL = ENV.SERVER_URL;
 
@@ -41,7 +41,7 @@ function App() {
   // handler for loading user workouts and setting them as the workouts const.
   const loadUserWorkouts = async (username) => {
     // Load workouts from the JSON file into local storage
-    await workoutService.loadWorkoutsFromFile(username);
+    await workoutService.loadWorkouts(username);
     const userWorkouts = workoutService.getWorkouts(username);
     setWorkouts(userWorkouts);
   };
@@ -65,8 +65,8 @@ function App() {
         userData.username,
         userData.password
       );
-      setUser(newUser); // Correctly set the new user object
-      loadUserWorkouts(newUser.username); // Use newUser here
+      setUser(newUser); 
+      loadUserWorkouts(newUser.username);
     } catch (error) {
       console.error("Registration failed:", error);
     }
@@ -75,7 +75,7 @@ function App() {
   // handler for logging out
   const handleLogout = () => {
     // need to remove because other user may login on same device
-    localStorage.removeItem(`workouts_${user.username}`);
+    authService.logout();
     setUser(null);
     setWorkouts([]);
   };
@@ -93,7 +93,7 @@ function App() {
     }
   };
 
-  // just a very basic four page router
+  // Notes from the instructor: probably going to learn a better way to guard soon / this is a good way to do it for now
   return (
     <Router>
       <div className="d-flex flex-column min-vh-100">

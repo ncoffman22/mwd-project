@@ -1,12 +1,9 @@
 import { Parse } from "parse";
-import * as ENV from "../environments.js"
 
-Parse.initialize(ENV.APPLICATION_ID, ENV.JAVASCRIPT_KEY);
-Parse.serverURL = ENV.SERVER_URL;
-
+// This works off of the Parse.Workouts class
 const workoutService = {
-    // This loads everything from the json file and saves it in local storage
-  loadWorkoutsFromFile: async (username) => {
+  // This gets the workouts for a user from Parse
+  loadWorkouts: async (username) => {
     try {
       const Workouts = Parse.Object.extend("Workouts");
       const query = new Parse.Query(Workouts);
@@ -28,7 +25,7 @@ const workoutService = {
     }
   },
 
-  // This gets the workouts for a user from local storage
+  // This gets the workouts for a user from local storage / this is done to reduce API requests
   getWorkouts: (username) => {
     try {
       // parse the data saved in local storage
@@ -43,7 +40,7 @@ const workoutService = {
     }
   },
 
-  // This gets the workouts for a user from local storage and adds one
+  // This adds a new workout to the Parse database
   addWorkout: async (username, workout) => {
       const myNewObject = new Parse.Object("Workouts");
       myNewObject.set("user", username);
@@ -66,6 +63,7 @@ const workoutService = {
       throw error;
       }
   },
+  // just need to add other crud operations here — update, delete, etc.
 };
 
 export default workoutService;

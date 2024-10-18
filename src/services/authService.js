@@ -1,6 +1,8 @@
 import Parse from "parse";
 
+// Works off of the Parse.User class
 const authService = {
+  // Logs in a user with a username and password
   login: async (username, password) => {
     if (!username || !password) {
       throw new Error("Username and password are required");
@@ -15,7 +17,7 @@ const authService = {
       const userData = {
         username: user.get("username"),
         objectId: user.id,
-        // Add any other user properties you need
+        // if you have other user data you want to store, add it here
       };
       
       localStorage.setItem("user", JSON.stringify(userData));
@@ -28,6 +30,7 @@ const authService = {
     }
   },
 
+  // Registers a new user with a username and password
   register: async (username, password) => {
     if (!username || !password) {
       throw new Error("Username and password are required");
@@ -43,7 +46,7 @@ const authService = {
       const userData = {
         username: userResult.get("username"),
         objectId: userResult.id,
-        // Add any other user properties you need
+        // if you have other user data you want to store, add it here
       };
       
       localStorage.setItem("user", JSON.stringify(userData));
@@ -56,6 +59,7 @@ const authService = {
     }
   },
 
+  // Gets the current user from local storage
   getCurrentUser: () => {
     try {
       const userString = localStorage.getItem("user");
@@ -66,6 +70,13 @@ const authService = {
       return null;
     }
   },
+
+  // Logs out the current user
+  logout: async () => {
+    localStorage.removeItem("user");
+    await Parse.User.logOut();
+  },
+  // need to add update methods for user data / might want to consider adding a component for user settings / profile info
 };
 
 export default authService;
