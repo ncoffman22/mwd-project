@@ -35,7 +35,7 @@ export default function NavigationParent({ user, onLogout }) {
           <Nav>
             <Nav.Link
               as={Link}
-              to="/add-split"
+              to="/splits"
               active={location.pathname === "/add-split"}
             >
               Add Split

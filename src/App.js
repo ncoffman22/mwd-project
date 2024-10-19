@@ -147,7 +147,7 @@ function App() {
               }
             />
             <Route
-              path="/add-split"
+              path="/splits"
               element={
                 user ? (
                   <AddSplitContainer user={user} />

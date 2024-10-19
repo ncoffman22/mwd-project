@@ -2,7 +2,7 @@ import { Parse } from "parse";
 
 // This works off of the Parse.Workouts class
 const workoutService = {
-  // This gets the workouts for a user from Parse
+  // READ — This gets the workouts for a user from Parse
   loadWorkouts: async (username) => {
     try {
       const Workouts = Parse.Object.extend("Workouts");
@@ -40,16 +40,16 @@ const workoutService = {
     }
   },
 
-  // This adds a new workout to the Parse database
+  // CREATE — This adds a new workout to the Parse database
   addWorkout: async (username, workout) => {
       const myNewObject = new Parse.Object("Workouts");
-      const workoutDate = new Date(workout.date);
+      const workoutDate = new Date(workout.datePerformed);
       myNewObject.set("user", username);
       myNewObject.set('liftType', workout.name);
       myNewObject.set('sets', workout.sets);
       myNewObject.set('reps', workout.reps);
       myNewObject.set('weight', workout.weight);
-      myNewObject.set('date', workoutDate);
+      myNewObject.set('datePerformed', workoutDate);
       try {
         const result = await myNewObject.save();
         console.log('Workout added:', result);
@@ -64,7 +64,56 @@ const workoutService = {
       throw error;
       }
   },
-  // just need to add other crud operations here — update, delete, etc.
+
+  // UPDATE — This updates a workout in the Parse database
+  updateWorkout: async (username, workout) => {
+    const Workouts = Parse.Object.extend("Workouts");
+    const query = new Parse.Query(Workouts);
+    query.equalTo("objectId", workout.objectId);
+    try {
+      const result = await query.first();
+      const workoutDate = new Date(workout.datePerformed);
+      result.set('liftType', workout.name);
+      result.set('sets', workout.sets);
+      result.set('reps', workout.reps);
+      result.set('weight', workout.weight);
+      result.set('datePerformed', workoutDate);
+      await result.save();
+      console.log('Workout updated:', result);
+
+      const workouts =
+        JSON.parse(localStorage.getItem(`workouts_${username}`)) || [];
+      const index = workouts.findIndex((w) => w.objectId === workout.objectId);
+      workouts[index] = workout;
+      localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
+      return workouts;
+    } catch (error) {
+      console.error("Failed to update workout:", error);
+      throw error;
+    }
+  },
+
+  // DELETE — This deletes a workout from the Parse database
+  deleteWorkout: async (username, workout) => {
+    const Workouts = Parse.Object.extend("Workouts");
+    const query = new Parse.Query(Workouts);
+    query.equalTo("objectId", workout.objectId);
+    try {
+      const result = await query.first();
+      await result.destroy();
+      console.log('Workout deleted:', result);
+
+      const workouts =
+        JSON.parse(localStorage.getItem(`workouts_${username}`)) || [];
+      const index = workouts.findIndex((w) => w.objectId === workout.objectId);
+      workouts.splice(index, 1);
+      localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
+      return workouts;
+    } catch (error) {
+      console.error("Failed to delete workout:", error);
+      throw error;
+    }
+  },
 };
 
 export default workoutService;

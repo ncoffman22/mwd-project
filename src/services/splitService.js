@@ -2,7 +2,7 @@ import {Parse} from 'parse';
 
 
 const splitService = {
-    // This gets the splits for a user from Parse
+    // READ — This gets the splits for a user from Parse
     loadSplits: async (username) => {
         try {
             const Splits = Parse.Object.extend("Splits");
@@ -35,7 +35,7 @@ const splitService = {
             return [];
         }
     },
-    // This adds a new split to the Parse database
+    // CREATE — This adds a new split to the Parse database
     addSplit: async (username, split) => {
         const myNewObject = new Parse.Object("Splits");
         const splitDate = new Date(split.date);
@@ -63,6 +63,59 @@ const splitService = {
             throw error;
         }
     },
-    // just need to add crud operations — update, delete, etc.
+    
+    // UPDATE — This updates an existing split in the Parse database
+    updateSplit: async (username, split) => {
+        const Splits = Parse.Object.extend("Splits");
+        const query = new Parse.Query(Splits);
+        query.equalTo("objectId", split.objectId);
+        const result = await query.first();
+        const splitDate = new Date(split.date);
+        result.set('split_title', split.title);
+        result.set('date', splitDate);
+
+        for (let i = 1; i <= 8; i++) {
+            if (split[`workout_${i}`]) {
+                const workoutPointer = Parse.Object.extend("Workouts").createWithoutData(split[`workout_${i}`]);
+                result.set(`workout_${i}`, workoutPointer);
+            }
+        }
+        try {
+            await result.save();
+            console.log('Split updated:', result);
+
+            const splits =
+                JSON.parse(localStorage.getItem(`splits_${username}`)) || [];
+            const index = splits.findIndex((s) => s.objectId === split.objectId);
+            splits[index] = split;
+            localStorage.setItem(`splits_${username}`, JSON.stringify(splits));
+            return splits;
+        } catch (error) {
+            console.error("Failed to update split:", error);
+            throw error;
+        }
+    },
+
+    // DELETE — This deletes a split from the Parse database
+    deleteSplit: async (username, split) => {
+        const Splits = Parse.Object.extend("Splits");
+        const query = new Parse.Query(Splits);
+        query.equalTo("objectId", split.objectId);
+        const result = await query.first();
+        try {
+            await result.destroy();
+            console.log('Split deleted:', result);
+
+            const splits =
+                JSON.parse(localStorage.getItem(`splits_${username}`)) || [];
+            const index = splits.findIndex((s) => s.objectId === split.objectId);
+            splits.splice(index, 1);
+            localStorage.setItem(`splits_${username}`, JSON.stringify(splits));
+            return splits;
+        } catch (error) {
+            console.error("Failed to delete split:", error);
+            throw error;
+        }
+    },
 }
 export default splitService;

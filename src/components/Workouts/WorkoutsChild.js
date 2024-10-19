@@ -7,10 +7,7 @@ export default function WorkoutsChild({ workout }) {
   return (
     <Card>
       <Card.Body>
-        <Card.Title>{workout.name}</Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">
-          Date: {workout.date}
-        </Card.Subtitle>
+        <Card.Title>{workout.liftType}</Card.Title>
         <Card.Text>
           <strong>Sets:</strong> {workout.sets}
           <br />
