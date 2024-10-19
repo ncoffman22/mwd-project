@@ -54,7 +54,7 @@ export default function AddWorkoutChild({ workout, onChange, onSubmit }) {
         <Form.Control
           type="date"
           name="reps"
-          value={workout.date}
+          value={workout.datePerformed}
           onChange={onChange}
           required
         />

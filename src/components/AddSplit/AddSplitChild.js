@@ -14,7 +14,7 @@ export default function AddSplitChild( { split, availableWorkouts, onChange, onW
                 <Form.Control
                     type="text"
                     name="title"
-                    value={split.title}
+                    value={split.split_title}
                     onChange={onChange}
                     required
                 />
@@ -42,7 +42,7 @@ export default function AddSplitChild( { split, availableWorkouts, onChange, onW
                     >
                         <option value="">Select a Workout</option>
                         {availableWorkouts.map((workout) => (
-                            <option key={workout.id} value={workout.id}>
+                            <option key={workout.objectId} value={workout.objectId}>
                                 {formatWorkoutOption(workout)}
                             </option>
                         ))}

@@ -9,7 +9,7 @@ export default function WorkoutsParent({ workouts }) {
       <Card.Header as="h2">Your Workouts</Card.Header>
       <ListGroup variant="flush">
         {workouts.map((workout) => (
-          <ListGroup.Item key={workout.id}>
+          <ListGroup.Item key={workout.objectId}>
             <WorkoutsChild workout={workout} />
           </ListGroup.Item>
         ))}

@@ -40,12 +40,12 @@ export default function AddWorkoutParent({ onAddWorkout, user }) {
     e.preventDefault();
     const newWorkout = {
       ...workout,
-      id: Date.now(),
       sets: parseInt(workout.sets),
       reps: parseInt(workout.reps),
       weight: parseFloat(workout.weight),
       splitID: selectedSplit,
       liftType: workout.name,
+      datePerformed: Date(workout.datePerformed)
     };
     // Add the workout
     onAddWorkout(newWorkout);
@@ -56,7 +56,7 @@ export default function AddWorkoutParent({ onAddWorkout, user }) {
       sets: "",
       reps: "",
       weight: "",
-      date: new Date().toISOString().split("T")[0],
+      datePerformed: new Date().toISOString().split("T")[0],
     });
     navigate("/workouts"); // Send to workout page
   };

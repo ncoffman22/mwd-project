@@ -43,13 +43,12 @@ const workoutService = {
   // CREATE — This adds a new workout to the Parse database
   addWorkout: async (username, workout) => {
       const myNewObject = new Parse.Object("Workouts");
-      const workoutDate = new Date(workout.datePerformed);
       myNewObject.set("user", username);
       myNewObject.set('liftType', workout.name);
       myNewObject.set('sets', workout.sets);
       myNewObject.set('reps', workout.reps);
       myNewObject.set('weight', workout.weight);
-      myNewObject.set('datePerformed', workoutDate);
+      myNewObject.set('datePerformed', workout.datePerformed);
       try {
         const result = await myNewObject.save();
         console.log('Workout added:', result);
@@ -72,12 +71,11 @@ const workoutService = {
     query.equalTo("objectId", workout.objectId);
     try {
       const result = await query.first();
-      const workoutDate = new Date(workout.datePerformed);
       result.set('liftType', workout.name);
       result.set('sets', workout.sets);
       result.set('reps', workout.reps);
       result.set('weight', workout.weight);
-      result.set('datePerformed', workoutDate);
+      result.set('datePerformed', workout.datePerformed);
       await result.save();
       console.log('Workout updated:', result);
 
