@@ -3,8 +3,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 import AuthChild from "./AuthChild";
+import workoutService from "../../services/workoutService";
 
-export default function AuthParent({ onLogin, onRegister }) {
+export default function AuthParent({setWorkouts}) {
   const [credentials, setCredentials] = useState({
     username: "",
     password: "",
@@ -26,19 +27,22 @@ export default function AuthParent({ onLogin, onRegister }) {
         throw new Error("Username and password are required");
       }
 
-      let user;
       if (isLogin) {
-        user = await authService.login(
+        await authService.login(
           credentials.username,
           credentials.password
         );
-        onLogin(user);
+        const user = authService.getCurrentUser().get("username") // get the current user
+        const userWorkouts = await workoutService.loadWorkouts(user) // load the workouts for that user
+        setWorkouts(userWorkouts)
       } else {
-        user = await authService.register(
+        await authService.register(
           credentials.username,
           credentials.password
-        );
-        onRegister(user);
+        ); // For register, this will occur
+        const user = authService.getCurrentUser().get("username")
+        const userWorkouts = await workoutService.loadWorkouts(user)
+        setWorkouts(userWorkouts)
       }
       navigate("/");
     } catch (error) {

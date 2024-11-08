@@ -40,7 +40,7 @@ const splitService = {
         const myNewObject = new Parse.Object("Splits");
         const splitDate = new Date(split.date);
         myNewObject.set("user", username);
-        myNewObject.set('split_title', split.title);
+        myNewObject.set('split_title', split.split_title);
         myNewObject.set('date', splitDate);
 
         for (let i = 1; i <= 8; i++) {

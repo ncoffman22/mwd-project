@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import AddSplitChild from "./AddSplitChild";
 import splitService from "../../services/splitService";
 import workoutService from "../../services/workoutService";
+import authService from "../../services/authService";
 
-export default function AddSplitParent({ user }) {
+export default function AddSplitParent() {
+    const user = authService.getCurrentUser().get("username")
     const [split, setSplit] = useState({
         split_title: '',
         date: new Date().toISOString().split('T')[0],
@@ -23,17 +25,16 @@ export default function AddSplitParent({ user }) {
 
     useEffect(() => {
         const fetchWorkouts = async () => {
-            const fetchedWorkouts = await workoutService.loadWorkouts(user.username);
+            const fetchedWorkouts = await workoutService.loadWorkouts(user);
             setAvailableWorkouts(fetchedWorkouts);
         };
         fetchWorkouts();
-    }, [user.username]);
+    }, [user]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
         setSplit((prevSplit) => ({
             ...prevSplit,
-            [name]: value,
+            [e.target.name]: e.target.value.trim(),
         }));
     };
 
@@ -47,7 +48,7 @@ export default function AddSplitParent({ user }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await splitService.addSplit(user.username, split);
+            await splitService.addSplit(user["username"], split);
             navigate('/splits');
         } catch (error) {
             console.error('Failed to add split:', error);
