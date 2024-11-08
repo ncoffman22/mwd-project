@@ -13,7 +13,7 @@ export default function AddSplitChild( { split, availableWorkouts, onChange, onW
                 <Form.Label>Split Title</Form.Label>
                 <Form.Control
                     type="text"
-                    name="title"
+                    name="split_title"
                     value={split.split_title}
                     onChange={onChange}
                     required
@@ -36,7 +36,7 @@ export default function AddSplitChild( { split, availableWorkouts, onChange, onW
                     <Form.Label>Workout {num}</Form.Label>
                     <Form.Control
                         as="select"
-                        value={split[`workout_${num}`]}
+                        value={split[`workout_${num}`] || ""}
                         onChange={(e) => onWorkoutsChange(`workout_${num}`, e.target.value)}
                         
                     >

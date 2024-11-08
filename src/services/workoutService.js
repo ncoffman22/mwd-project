@@ -13,7 +13,6 @@ const workoutService = {
       if (results.length > 0) {
         const workouts = results.map((result) => result.toJSON());
         console.log("Loaded workouts from Parse:", workouts);
-        localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
         return workouts;
       } else {
         console.log("No workouts found for user:", username);
@@ -25,22 +24,8 @@ const workoutService = {
     }
   },
 
-  // This gets the workouts for a user from local storage / this is done to reduce API requests
-  getWorkouts: (username) => {
-    try {
-      // parse the data saved in local storage
-      const workouts =
-        JSON.parse(localStorage.getItem(`workouts_${username}`)) || [];
-      return workouts; // return them
-    } catch (error) {
-      // just log it in the console, only error would be in JSON or localstorage
-      // so we aren't gonna throw a weird error that's not necessary
-      console.error("Failed to load workouts:", error);
-      return [];
-    }
-  },
 
-  // CREATE — This adds a new workout to the Parse database
+  // Add a new website to the database
   addWorkout: async (username, workout) => {
       const myNewObject = new Parse.Object("Workouts");
       myNewObject.set("user", username);
@@ -52,11 +37,7 @@ const workoutService = {
       try {
         const result = await myNewObject.save();
         console.log('Workout added:', result);
-
-        const workouts =
-        JSON.parse(localStorage.getItem(`workouts_${username}`)) || [];
-        workouts.push(workout);
-        localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
+        const workouts = await workoutService.loadWorkouts(username)
         return workouts;
       } catch (error) {
       console.error("Failed to add workout:", error);
@@ -78,12 +59,7 @@ const workoutService = {
       result.set('datePerformed', workout.datePerformed);
       await result.save();
       console.log('Workout updated:', result);
-
-      const workouts =
-        JSON.parse(localStorage.getItem(`workouts_${username}`)) || [];
-      const index = workouts.findIndex((w) => w.objectId === workout.objectId);
-      workouts[index] = workout;
-      localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
+      const workouts = await workoutService.loadWorkouts(username)
       return workouts;
     } catch (error) {
       console.error("Failed to update workout:", error);
@@ -91,21 +67,16 @@ const workoutService = {
     }
   },
 
-  // DELETE — This deletes a workout from the Parse database
+  // Will delete from the database. This has yet to be implemented, but will eb in the future
   deleteWorkout: async (username, workout) => {
-    const Workouts = Parse.Object.extend("Workouts");
+    const Workouts = Parse.Object.extend("Workouts"); // Find the workout for that user, and destroy it
     const query = new Parse.Query(Workouts);
     query.equalTo("objectId", workout.objectId);
     try {
       const result = await query.first();
       await result.destroy();
-      console.log('Workout deleted:', result);
-
-      const workouts =
-        JSON.parse(localStorage.getItem(`workouts_${username}`)) || [];
-      const index = workouts.findIndex((w) => w.objectId === workout.objectId);
-      workouts.splice(index, 1);
-      localStorage.setItem(`workouts_${username}`, JSON.stringify(workouts));
+      console.log('Workout deleted:', result); // Console logs for development will be deleted later on
+      const workouts = await workoutService.loadWorkouts(username)
       return workouts;
     } catch (error) {
       console.error("Failed to delete workout:", error);

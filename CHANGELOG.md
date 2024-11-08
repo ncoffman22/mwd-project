@@ -1,5 +1,11 @@
 ## **Change Log**
 
+**0.5 - 2024-11-08**
+**ADDED**
+
+- Components.js
+- ProtectedRoutes.js
+
 **0.4.1 - 2024-10-17**
 
 **ADDED**
