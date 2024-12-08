@@ -1,67 +1,89 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import AddSplitChild from "./AddSplitChild";
-import splitService from "../../services/splitService";
-import workoutService from "../../services/workoutService";
-import authService from "../../services/authService";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AddSplitChild from './AddSplitChild';
+import authService from '../../services/authService';
+import splitService from '../../services/splitService';
 
-export default function AddSplitParent() {
-    const user = authService.getCurrentUser().get("username")
-    const [split, setSplit] = useState({
-        split_title: '',
-        date: new Date().toISOString().split('T')[0],
-        workout_1: null,
-        workout_2: null,
-        workout_3: null,
-        workout_4: null,
-        workout_5: null,
-        workout_6: null,
-        workout_7: null,
-        workout_8: null,
+const AddSplitParent = () => {
+    const navigate = useNavigate();
+    const user = authService.getCurrentUser();
+    const [error, setError] = useState('');
+    // this is the data type we use throughout the component to make the split
+    const [splitData, setSplitData] = useState({
+        name: '',
+        description: '',
+        days: 0,
+        setAsDefault: false,
+        bodyparts: {
+            day1: [], day2: [], day3: [],
+            day4: [], day5: [], day6: []
+        }
     });
 
-    const [availableWorkouts, setAvailableWorkouts] = useState([]);
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const fetchWorkouts = async () => {
-            const fetchedWorkouts = await workoutService.loadWorkouts(user);
-            setAvailableWorkouts(fetchedWorkouts);
-        };
-        fetchWorkouts();
-    }, [user]);
-
-    const handleChange = (e) => {
-        setSplit((prevSplit) => ({
-            ...prevSplit,
-            [e.target.name]: e.target.value.trim(),
+    // handler thta handles the change of the split data
+    const handleSplitDataChange = (field, value) => {
+        setSplitData(prev => ({
+            ...prev, // this just copies the previous state
+            [field]: value,
+            ...(field === 'days' && {
+                bodyparts: {
+                    day1: [], day2: [], day3: [],
+                    day4: [], day5: [], day6: []
+                }
+            })
         }));
     };
 
-    const handleWorkoutsChange = (workoutKey, workoutId) => {
-        setSplit((prevSplit) => ({
-            ...prevSplit,
-            [workoutKey]: workoutId,
+    // handler that handles the change of the body part
+    const handleBodyPartChange = (dayNum, bodyPart) => {
+        const dayKey = `day${dayNum}`; // have to make a day key to access the correct day
+        setSplitData(prev => ({
+            ...prev, // copy the previous state
+            bodyparts: {
+                ...prev.bodyparts,                                              // copy the previous bodyparts
+                [dayKey]: prev.bodyparts[dayKey].includes(bodyPart)             // check if the body part is already in the list
+                    ? prev.bodyparts[dayKey].filter(part => part !== bodyPart)  // if it is, remove it
+                    : [...prev.bodyparts[dayKey], bodyPart]                     // if it isn't, add it
+            }
         }));
-    }
+    };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // handler that handles the submit of the split
+    const handleSubmit = async () => {
         try {
-            await splitService.addSplit(user["username"], split);
-            navigate('/splits');
-        } catch (error) {
-            console.error('Failed to add split:', error);
+            // add the split to the database
+            const { name, description, days, bodyparts } = splitData;
+            const bodyParts = Object.fromEntries(
+                Object.entries(bodyparts).slice(0, days)
+            );
+            const savedSplit = await splitService.addSplit(
+                name,
+                description,
+                days,
+                ...Object.values(bodyParts)
+            )
+
+            // if the user wants to set the split as default, set it as default
+            if (splitData.setAsDefault && savedSplit) {
+                const currentUser = authService.getCurrentUser();
+                await currentUser.set('defaultSplit', savedSplit).save();
+            }
+
+            navigate('/calendar');
+        } catch (e) {
+            setError('Failed to create split: ' + e.message);
+            console.error('Error creating split:', error);
         }
     };
 
     return (
         <AddSplitChild
-            split={split}
-            availableWorkouts={availableWorkouts}
-            onChange={handleChange}
-            onWorkoutsChange={handleWorkoutsChange}
+            splitData={splitData}
+            onSplitDataChange={handleSplitDataChange}
+            onBodyPartChange={handleBodyPartChange}
             onSubmit={handleSubmit}
+            user={user}
         />
     );
-}
+};
+export default AddSplitParent;
