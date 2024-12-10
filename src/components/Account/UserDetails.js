@@ -10,7 +10,7 @@ export default function UserDetails (){
         height: '',
         weight: '',
         birthSex: '',
-        goalWeight: '',
+        defaultSplit:'' //  quert frim cache service and get cached splits and return split name
     }); // defaults for each field
 
      // Handle form input changes
@@ -25,6 +25,7 @@ export default function UserDetails (){
     const handleSaveChanges = () => {
         // Add your logic to save data, e.g., send it to a server
         setShowModal(false); // Close the modal after saving
+        accountService.saveProfile(formData)
     };
 
     // Open the modal when the user clicks on the profile picture
