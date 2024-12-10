@@ -11,14 +11,13 @@ import CalendarContainer from './Calendar/CalendarContainer';
 import WikiContainer from './Wiki/WikiContainer';
 import AccountContainer from './Account/AccountContainer'
 const Components = () => {
-    const [workouts, setWorkouts] = useState([]);
     return (
         <Routes>
             <Route
                 path="/"
                 element={
                     <ProtectedRoutes>
-                        <DashboardContainer workouts={workouts} />
+                        <DashboardContainer />
                     </ProtectedRoutes>
                 }
             />
@@ -26,7 +25,7 @@ const Components = () => {
                 path="/add-workout"
                 element={
                     <ProtectedRoutes>
-                        <AddWorkoutContainer updateWorkouts={updateWorkouts} setWorkouts={setWorkouts} />
+                        <AddWorkoutContainer />
                     </ProtectedRoutes>
                 }
             />
@@ -44,7 +43,7 @@ const Components = () => {
                 path="/calendar"
                 element={
                     <ProtectedRoutes>
-                        <CalendarContainer workouts={workouts} updateWorkouts={updateWorkouts} setWorkouts={setWorkouts}/>
+                        <CalendarContainer/>
                     </ProtectedRoutes>
                 }
             />
@@ -68,7 +67,7 @@ const Components = () => {
                 path="*"
                 element={
                     <ProtectedRoutes>
-                        <DashboardContainer workouts={workouts} setWorkouts={setWorkouts} updateWorkouts={updateWorkouts}/>
+                        <DashboardContainer />
                     </ProtectedRoutes>
                 }
             />
