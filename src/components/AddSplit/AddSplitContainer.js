@@ -1,10 +1,13 @@
 import React from 'react';
+import { Container } from 'react-bootstrap';
 import AddSplitParent from './AddSplitParent';
 
-export default function AddSplitContainer() {
+const AddSplitContainer = () => {
     return (
-        <div>
+        <Container>
             <AddSplitParent />
-        </div>
-    )
-}
+        </Container>
+    );
+};
+
+export default AddSplitContainer;
