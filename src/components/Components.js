@@ -9,6 +9,7 @@ import ProtectedRoutes from './ProtectedRoutes';
 import authService from '../services/authService';
 import CalendarContainer from './Calendar/CalendarContainer';
 import WikiContainer from './Wiki/WikiContainer';
+import AccountContainer from './Account/AccountContainer'
 const Components = () => {
     const [workouts, setWorkouts] = useState([]);
     return (
@@ -76,6 +77,14 @@ const Components = () => {
                 element={
                     <ProtectedRoutes>
                         <WikiContainer />
+                    </ProtectedRoutes>
+                }
+            />
+            <Route 
+                path="/account" 
+                element={
+                    <ProtectedRoutes>
+                        <AccountContainer />
                     </ProtectedRoutes>
                 }
             />

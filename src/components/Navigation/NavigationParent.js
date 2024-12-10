@@ -2,6 +2,8 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Navbar, Nav, Button, Container } from "react-bootstrap";
 import authService from "../../services/authService";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 export default function NavigationParent() {
     const location = useLocation();
@@ -58,6 +60,13 @@ export default function NavigationParent() {
                         </Nav.Link>
                     </Nav>
                     <Nav>
+                    <Nav.Link
+                            as={Link}
+                            to="/account"
+                            active={location.pathname === "/account"}
+                        >
+                            <FontAwesomeIcon icon={faUser} style={{color: 'gray'}} />
+                        </Nav.Link>
                         {user ? (
                             <Button variant="outline-primary" onClick={handleLogout}>
                                 Logout
