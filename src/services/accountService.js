@@ -30,6 +30,28 @@ const accountService = {
 
         return image?.url() || 'https://via.placeholder.com/150'; // Use optional chaining for safety
     },
+    saveProfile: async() => {
+        // if (!username || !password) {
+        //     throw new Error("Username and password are required");
+        // }
+
+        // const user = new Parse.User();
+        // user.set("username", username.trim());
+        // user.set("password", password);
+        
+        // try {
+        //     const userResult = await user.signUp();
+        //     console.log(userResult)
+        // } catch (error) {
+        //     if (error.code === Parse.Error.USERNAME_TAKEN) {
+        //         throw new Error("Username is already taken");
+        //     }
+        //     throw error;
+        // }
+        const user = Parse.User.current();
+        // user.set()
+        // user.set()
+    }
 };
 
 export default accountService
