@@ -1,18 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {Modal, Button, Form} from 'react-bootstrap'
 import accountService from "../../services/accountService";
-
+import {getCachedSplits} from '../../services/cacheService'
 export default function UserDetails (){
     const [showModal, setShowModal] = useState(false); // Modal visibility
     const [formData, setFormData] = useState({
         name: '',
-        birthDate: '',
+        birthDate: new Date(),
         height: '',
         weight: '',
         birthSex: '',
-        defaultSplit:'' //  quert frim cache service and get cached splits and return split name
+        defaultSplit:'' //  query frim cache service and get cached splits and return split name
     }); // defaults for each field
+    const [splitOptions, setSplitOptions] = useState(null)
 
+    useEffect(()=>{
+            const getDefaults = async ()=>{
+                const splits = await getCachedSplits()
+                const splitNames = splits.map((s) =>s.get("name"))
+                setSplitOptions(splitNames)
+            }
+            getDefaults()
+        }, [])
+        
      // Handle form input changes
      const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -99,19 +109,19 @@ export default function UserDetails (){
                                 <option value="">Select</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
-                                <option value="other">Other</option>
                             </Form.Control>
                         </Form.Group>
-
-                        <Form.Group controlId="formGoalWeight">
-                            <Form.Label>Goal Weight (in lbs)</Form.Label>
+                        <Form.Group controlId="defaultSplit">
+                            <Form.Label>Select a Default Split</Form.Label>
                             <Form.Control
-                                type="number"
-                                name="goalWeight"
-                                placeholder="Enter your goal weight"
-                                value={formData.goalWeight}
-                                onChange={handleInputChange}
-                            />
+                            as="select"
+                            value={formData.defaultSplit}>
+                                {splitOptions && splitOptions.map((s, index)=>(
+                                    <option key={index} value={s}>
+                                        {s}
+                                    </option>
+                                ))}
+                            </Form.Control>
                         </Form.Group>
                     </Form>
                 </Modal.Body>

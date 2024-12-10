@@ -31,9 +31,22 @@ const accountService = {
         return image?.url() || 'https://via.placeholder.com/150'; // Use optional chaining for safety
     },
     saveProfile: async(profileData) => {
-        const user = Parse.User.current();
-        user.set("sex", profileData["date"])
-        // user.set()
+        try{
+            const User =  Parse.User.current();
+            const query = new Parse.Query(User);
+            let user = await query.get(User.id)
+            const birthday = new Date(profileData["birthDate"])
+            user.set("name", profileData["name"]);
+            user.set("birthday", birthday);
+            user.set("height", parseInt(profileData["height"]));
+            user.set("bodweight", parseInt(profileData["weight"]));
+            user.set("sex", profileData["birthSex"]=="male" ? true : false);
+            user.set("default", profileData["defaultSplit"])
+            const result = await user.save();
+            return result
+        } catch(error){
+            throw error
+        }
     }
 };
 
