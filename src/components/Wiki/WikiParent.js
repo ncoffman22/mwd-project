@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Fuse from 'fuse.js';
 import WikiChild from './WikiChild';
-import liftTypesService from '../../services/liftTypesService';
-import splitService from '../../services/splitService';
-
+import { getCachedUserLiftTypes, getCachedSplits } from '../../services/cacheService';
 const WikiParent = () => {
     const [exercises, setExercises] = useState([]);
     const [splits, setSplits] = useState([]);
@@ -24,8 +22,8 @@ const WikiParent = () => {
         const loadData = async () => {
             try {
                 const [exerciseData, splitData] = await Promise.all([
-                    liftTypesService.getLiftTypes(),
-                    splitService.getSplit()
+                    getCachedUserLiftTypes(),
+                    getCachedSplits()
                 ]);
                 setExercises(exerciseData);
                 setSplits(splitData);

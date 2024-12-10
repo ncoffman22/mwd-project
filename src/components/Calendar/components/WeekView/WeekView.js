@@ -2,6 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Card, Button, Typography, Badge, Space } from 'antd';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
+
 const { Text, Title } = Typography;
 
 const WeekView = ({ workouts = [], onWorkoutClick, selectedDate }) => {
@@ -22,9 +26,11 @@ const WeekView = ({ workouts = [], onWorkoutClick, selectedDate }) => {
     }, [currentWeekStart]);
 
     const getWorkoutsForDay = (date) => {
-        return workouts.filter(workout => 
-            dayjs(workout.date).isSame(date, 'day')
-        );
+        return workouts.filter(workout => {
+            // Convert both dates to start of day for comparison
+            const workoutDate = dayjs(workout.date).startOf('day');
+            return workoutDate.isSame(date.startOf('day'), 'day');
+        });
     };
 
     const navigateWeek = (direction) => {
@@ -37,11 +43,6 @@ const WeekView = ({ workouts = [], onWorkoutClick, selectedDate }) => {
 
     const goToCurrentWeek = () => {
         setCurrentWeekStart(dayjs().startOf('week'));
-    };
-
-    const handleWorkoutClick = (workout, e) => {
-        e.stopPropagation();
-        onWorkoutClick(workout);
     };
 
     return (
@@ -77,7 +78,7 @@ const WeekView = ({ workouts = [], onWorkoutClick, selectedDate }) => {
                             <div className="flex justify-between items-center border-b pb-2">
                                 <div>
                                     <Text strong className="block">{dayName}</Text>
-                                    <Text type="secondary"> {dayNumber}</Text>
+                                    <Text type="secondary">{dayNumber}</Text>
                                 </div>
                                 {isToday && (
                                     <Badge status="processing" text="Today" />
@@ -91,16 +92,16 @@ const WeekView = ({ workouts = [], onWorkoutClick, selectedDate }) => {
                                             <div 
                                                 key={workout.id}
                                                 className="p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-                                                onClick={(e) => handleWorkoutClick(workout, e)}
+                                                onClick={() => onWorkoutClick?.(workout)}
                                             >
                                                 <div>
-                                                    <Text className="block">
-                                                        <strong>{workout.splitName}</strong>: Day {workout.day}
+                                                    <Text strong className="block">
+                                                        {workout.splitName}: Day {workout.day}
                                                     </Text>
                                                     <div className="mt-1">
                                                         {workout.lifts?.map((lift, index) => (
                                                             <Text key={lift.id || index} className="block text-xs text-gray-600">
-                                                                {lift.name}: {lift.sets} sets × {lift.reps} reps @ {lift.weight}lbs <br />
+                                                                {lift.name}: {lift.sets}×{lift.reps} @ {lift.weight}lbs
                                                             </Text>
                                                         ))}
                                                     </div>

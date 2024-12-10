@@ -3,8 +3,12 @@ import Parse from "parse";
 const authService = {
     // Gets the current user from Parse
     getCurrentUser:    () => {
-        const currentUser = Parse.User.current();
-        return currentUser ? currentUser : null;
+        try {
+            const currentUser = Parse.User.current();
+            return currentUser;
+        } catch (error) {
+            return null;
+        }
     },
 
     // Logs in a user with a username and password

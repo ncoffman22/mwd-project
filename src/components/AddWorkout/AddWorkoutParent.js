@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddWorkoutChild from './AddWorkoutChild';
-import authService from '../../services/authService';
-import splitService from '../../services/splitService';
-import liftTypesService from '../../services/liftTypesService';
 import liftsService from '../../services/liftsService';
 import workoutsService from '../../services/workoutsService';
-
+import authService from '../../services/authService';
+import { getCachedSplits, getCachedUserLiftTypes, updateCachesAfterWorkoutCreate } from '../../services/cacheService';
 const AddWorkoutParent = () => {
 	const navigate = useNavigate();
 	const user = authService.getCurrentUser();
@@ -21,8 +19,8 @@ const AddWorkoutParent = () => {
 	useEffect(() => {
 		const loadData = async () => {
 			try {
-				const fetchedSplits = await splitService.getSplit();
-				const fetchedLiftTypes = await liftTypesService.getLiftTypes();
+				const fetchedSplits = await getCachedSplits(user.id);
+				const fetchedLiftTypes = await getCachedUserLiftTypes(user.id);
 				setSplits(fetchedSplits);
 				setLiftTypes(fetchedLiftTypes);
 			} catch (e) {
@@ -36,11 +34,11 @@ const AddWorkoutParent = () => {
 	// handler for selecting a split
 	const handleSplitSelect = async (splitId) => {
 		try {
-			const split = await splitService.oGetSplit(splitId);
-			setSelectedSplit(split[0]);
+			const split = splits.find(split => split.id === splitId);
+			setSelectedSplit(split);
 			// Initialize dates for all days
 			const initialDates = {};
-			for (let i = 1; i <= split[0].get('days'); i++) {
+			for (let i = 1; i <= split.get('days'); i++) {
 				initialDates[`day${i}`] = new Date().toISOString().split('T')[0];
 			}
 			setWorkoutDates(initialDates);
@@ -136,6 +134,7 @@ const AddWorkoutParent = () => {
 			});
 
 			await Promise.all(workoutPromises);
+			updateCachesAfterWorkoutCreate(user.id);
 			navigate('/calendar');
 		} catch (err) {
 			setError('Failed to create workouts: ' + err.message);

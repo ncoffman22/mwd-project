@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AddSplitChild from './AddSplitChild';
 import authService from '../../services/authService';
 import splitService from '../../services/splitService';
-
+import { updateCacheAfterSplitCreate } from '../../services/cacheService';
 const AddSplitParent = () => {
     const navigate = useNavigate();
     const user = authService.getCurrentUser();
@@ -61,14 +61,14 @@ const AddSplitParent = () => {
                 description,
                 days,
                 ...Object.values(bodyParts)
-            )
+            ) 
 
             // if the user wants to set the split as default, set it as default
             if (splitData.setAsDefault && savedSplit) {
                 const currentUser = authService.getCurrentUser();
                 await currentUser.set('defaultSplit', savedSplit).save();
             }
-
+            updateCacheAfterSplitCreate(user.id);
             navigate('/calendar');
         } catch (e) {
             setError('Failed to create split: ' + e.message);

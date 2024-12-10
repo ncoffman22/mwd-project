@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Form, Button, Card, Tabs, Tab } from 'react-bootstrap';
 import WorkoutDayTab from './components/WorkoutDayTab/WorkoutDayTab';
+
 const AddWorkoutChild = ({
     splits,
     selectedSplit,
@@ -17,42 +18,44 @@ const AddWorkoutChild = ({
     const [showExerciseForm, setShowExerciseForm] = useState(false);
     const [selectedLiftType, setSelectedLiftType] = useState(null);
     const [activeTab, setActiveTab] = useState('day1');
-    const [exerciseMode, setExerciseMode] = useState('manual'); // 'manual' or 'ai'
+    const [exerciseMode, setExerciseMode] = useState('manual');
 
-    // get the user's default split and select it if not already selected
     useEffect(() => {
-        const defaultSplit = user.get('defaultSplit');
+        const defaultSplit = user.defaultSplit;
         if (defaultSplit && !selectedSplit) {
             onSplitSelect(defaultSplit.id);
         }
     }, [user, selectedSplit, onSplitSelect]);
 
-    // handle selecting a lift type from the search results
     const handleLiftTypeSelect = (liftType) => {
         setSelectedLiftType(liftType);
         setShowExerciseForm(true);
     };
 
-    // handle submitting the exercise form
     const handleExerciseSubmit = (exerciseData) => {
         onLiftSelect(activeTab, exerciseData);
         setShowExerciseForm(false);
         setSelectedLiftType(null);
     };
 
-    // handle generating exercises from the gpt backend
     const handleAutoWorkoutGenerated = (exercises) => {
-        // add all generated exercises to the current day
         exercises.forEach(exercise => {
             onLiftSelect(activeTab, exercise);
         });
-        setExerciseMode('manual'); // switch back to manual mode after generation
+        setExerciseMode('manual');
     };
-    // memoized version
+
+    const handleExerciseModeChange = (mode) => {
+        setExerciseMode(mode);
+        setShowExerciseForm(false);
+        setSelectedLiftType(null);
+    };
+
     const workoutDayTabs = useMemo(() => {
         if (!selectedSplit) {
             return null;
         }
+
         return Array.from({ length: selectedSplit.get('days') || 0 }, (_, i) => {
             const dayNum = i + 1;
             const dayKey = `day${dayNum}`;
@@ -80,27 +83,26 @@ const AddWorkoutChild = ({
                         handleExerciseSubmit={handleExerciseSubmit}
                         setShowExerciseForm={setShowExerciseForm}
                         setSelectedLiftType={setSelectedLiftType}
+                        setExerciseMode={handleExerciseModeChange}
                     />
                 </Tab>
             );
         });
     }, [
-        selectedSplit, 
-        workoutDates, 
-        onDateChange, 
-        exerciseMode, 
-        showExerciseForm, 
-        selectedLiftType, 
-        activeTab, 
-        selectedLifts, 
-        onLiftSelect, 
-        onRemoveLift, 
-        liftTypes, 
-        handleLiftTypeSelect, 
-        handleAutoWorkoutGenerated, 
-        handleExerciseSubmit, 
-        setShowExerciseForm, 
-        setSelectedLiftType
+        selectedSplit,
+        workoutDates,
+        onDateChange,
+        exerciseMode,
+        showExerciseForm,
+        selectedLiftType,
+        activeTab,
+        selectedLifts,
+        onLiftSelect,
+        onRemoveLift,
+        liftTypes,
+        handleLiftTypeSelect,
+        handleAutoWorkoutGenerated,
+        handleExerciseSubmit
     ]);
     return (
         <Card className="shadow-sm">
@@ -123,10 +125,10 @@ const AddWorkoutChild = ({
                                 <option 
                                     key={split.id} 
                                     value={split.id}
-                                    selected={split.id === user.get('defaultSplit')?.id}
+                                    selected={split.id === user.defaultSplit?.id}
                                 >
                                     {split.get('name')}
-                                    {split.id === user.get('defaultSplit')?.id ? ' (Default)' : ''}
+                                    {split.id === user.defaultSplit?.id ? ' (Default)' : ''}
                                 </option>
                             ))}
                         </Form.Select>

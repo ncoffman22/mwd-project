@@ -1,16 +1,20 @@
 import React from 'react';
-import { Badge, Typography } from 'antd';
+import { Typography } from 'antd';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const { Text } = Typography;
 
-const DateCellRender = ( {value, workouts, handleWorkoutClick}) => {
+const DateCellRender = ({ value, workouts, handleWorkoutClick }) => {
     if (!Array.isArray(workouts)) return null;
 
-    const date = value.toDate();
+    const date = value.startOf('day');
     const dayWorkouts = workouts.filter(workout => {
-        const workoutDate = dayjs(workout.date);
-        return workoutDate.isSame(dayjs(date), 'day');
+        // Convert datePerformed to start of day for comparison
+        const workoutDate = dayjs(workout.date).startOf('day');
+        return workoutDate.isSame(date, 'day');
     });
 
     return (

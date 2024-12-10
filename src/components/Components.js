@@ -9,8 +9,7 @@ import ProtectedRoutes from './ProtectedRoutes';
 import authService from '../services/authService';
 import CalendarContainer from './Calendar/CalendarContainer';
 import WikiContainer from './Wiki/WikiContainer';
-const Components = () => {
-    const [workouts, setWorkouts] = useState([]);
+const Components = ({ workouts, setWorkouts, updateWorkouts}) => {
     return (
         <Routes>
             <Route
@@ -25,7 +24,7 @@ const Components = () => {
                 path="/add-workout"
                 element={
                     <ProtectedRoutes>
-                        <AddWorkoutContainer setWorkouts={setWorkouts} />
+                        <AddWorkoutContainer updateWorkouts={updateWorkouts} setWorkouts={setWorkouts} />
                     </ProtectedRoutes>
                 }
             />
@@ -35,7 +34,7 @@ const Components = () => {
                     authService.getCurrentUser() ? (
                         <Navigate to="/" replace />
                     ) : (
-                        <AuthContainer setWorkouts={setWorkouts} />
+                        <AuthContainer />
                     )
                 }
             />
@@ -43,7 +42,7 @@ const Components = () => {
                 path="/calendar"
                 element={
                     <ProtectedRoutes>
-                        <CalendarContainer />
+                        <CalendarContainer workouts={workouts} updateWorkouts={updateWorkouts} setWorkouts={setWorkouts}/>
                     </ProtectedRoutes>
                 }
             />
@@ -67,7 +66,7 @@ const Components = () => {
                 path="*"
                 element={
                     <ProtectedRoutes>
-                        <DashboardContainer workouts={workouts} />
+                        <DashboardContainer workouts={workouts} setWorkouts={setWorkouts} updateWorkouts={updateWorkouts}/>
                     </ProtectedRoutes>
                 }
             />

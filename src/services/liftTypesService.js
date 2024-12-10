@@ -11,6 +11,7 @@ const liftTypesService = {
         newLiftType.set("level", level);
         try {
             const result = await newLiftType.save();
+
             return result;
         } catch (error) {
             throw error;
@@ -18,7 +19,7 @@ const liftTypesService = {
 
     },
 
-    oGetLiftType: async (objectId) => {
+    oGetLiftType: async (objectId) => {        
         const LiftTypes = Parse.Object.extend("LiftTypes");
         const query = new Parse.Query(LiftTypes);
         query.equalTo("objectId", objectId);
@@ -30,6 +31,7 @@ const liftTypesService = {
         }
     },
     nGetLiftType: async (name) => {
+
         const LiftTypes = Parse.Object.extend("LiftTypes");
         const query = new Parse.Query(LiftTypes);
         query.equalTo("name", name);
@@ -41,6 +43,7 @@ const liftTypesService = {
         }
     },
     getLiftTypes: async () => {
+
         const LiftTypes = Parse.Object.extend("LiftTypes");
         const query = new Parse.Query(LiftTypes);
         query.limit(3000);
@@ -51,6 +54,7 @@ const liftTypesService = {
             throw error;
         }
     },
+
     updateLiftType: async (objectId, name, desc, type, bodyPart, equipment, level) => {
         const LiftTypes = Parse.Object.extend("LiftTypes");
         const query = new Parse.Query(LiftTypes);
@@ -64,6 +68,7 @@ const liftTypesService = {
             result.set("equipment", equipment);
             result.set("level", level);
             const updateResult = await result.save();
+
             return updateResult;
         } catch (error) {
             throw error;
