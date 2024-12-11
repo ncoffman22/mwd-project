@@ -4,7 +4,7 @@ import { Modal, Button } from 'react-bootstrap';
 
 import 'cropperjs/dist/cropper.css'; // Import cropper CSS for styling
 import accountService from '../../services/accountService';
-const ProfilePicture = () => {
+const AccountPicture = () => {
     const [imageData, setImageData] = useState(); // Store cropped image data
     const [showModal, setShowModal] = useState(false); // Modal visibility
     const [profilePic, setProfilePic] = useState(); // Profile picture state
@@ -49,7 +49,6 @@ const ProfilePicture = () => {
 
     return (
         <div>
-            <h1>Account</h1>
             <div onClick={handleProfilePicClick}>
                 {/* Show profile picture*/}
                 <img
@@ -111,4 +110,4 @@ const ProfilePicture = () => {
     );
 };
 
-export default ProfilePicture;
+export default AccountPicture;

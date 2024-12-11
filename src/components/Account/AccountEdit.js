@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {Modal, Button, Form} from 'react-bootstrap'
 import accountService from "../../services/accountService";
 import {getCachedSplits} from '../../services/cacheService'
-export default function UserDetails (){
+export default function AccountEdit (){
     const [showModal, setShowModal] = useState(false); // Modal visibility
     const [formData, setFormData] = useState({
         name: '',
@@ -48,7 +48,7 @@ export default function UserDetails (){
 
     return(
         <div>
-            <Button variant="primary" onClick={handleEditClick}>
+            <Button variant="light" onClick={handleEditClick}>
                 Edit Profile
             </Button>
             <Modal show={showModal} onHide={handleCloseModal}>
@@ -114,15 +114,20 @@ export default function UserDetails (){
                         <Form.Group controlId="defaultSplit">
                             <Form.Label>Select a Default Split</Form.Label>
                             <Form.Control
-                            as="select"
-                            value={formData.defaultSplit}>
-                                {splitOptions && splitOptions.map((s, index)=>(
+                                as="select"
+                                name="defaultSplit"
+                                value={formData.defaultSplit}
+                                onChange={handleInputChange} // Add the onChange handler here
+                            >
+                                <option value="">Select a split</option>
+                                {splitOptions && splitOptions.map((s, index) => (
                                     <option key={index} value={s}>
                                         {s}
                                     </option>
                                 ))}
                             </Form.Control>
                         </Form.Group>
+
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
