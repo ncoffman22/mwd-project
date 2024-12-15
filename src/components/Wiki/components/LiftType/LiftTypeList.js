@@ -119,7 +119,7 @@ const LiftTypeList = ({ liftTypes, loading }) => {
                                             ) : (
                                                 <Button
                                                     variant="primary"
-                                                    onClick={generateDescription(liftType)}
+                                                    onClick={() => generateDescription(liftType)}
                                                     disabled={state.loading}
                                                     className="px-4"
                                                 >
