@@ -30,28 +30,39 @@ const accountService = {
 
         return image?.url() || 'https://via.placeholder.com/150'; // Use optional chaining for safety
     },
-    saveProfile: async() => {
-        // if (!username || !password) {
-        //     throw new Error("Username and password are required");
-        // }
-
-        // const user = new Parse.User();
-        // user.set("username", username.trim());
-        // user.set("password", password);
-        
-        // try {
-        //     const userResult = await user.signUp();
-        //     console.log(userResult)
-        // } catch (error) {
-        //     if (error.code === Parse.Error.USERNAME_TAKEN) {
-        //         throw new Error("Username is already taken");
-        //     }
-        //     throw error;
-        // }
-        const user = Parse.User.current();
-        // user.set()
-        // user.set()
-    }
+    saveProfile: async(profileData) => {
+        try{
+            // Create the user query in order to upload database
+            const User =  Parse.User.current();
+            const query = new Parse.Query(User);
+            let user = await query.get(User.id)
+            const birthday = new Date(profileData["birthDate"])
+            // Set the different fields to the input data
+            user.set("name", profileData["name"]);
+            user.set("birthday", birthday);
+            user.set("height", parseInt(profileData["height"]));
+            user.set("bodweight", parseInt(profileData["weight"]));
+            user.set("sex", profileData["birthSex"]=="male" ? true : false);
+            user.set("default", profileData["defaultSplit"])
+            // Send the 
+            const result = await user.save();
+            return result
+        } catch(error){
+            throw error
+        }
+    },
+    getData: async ()=>{
+        const user = Parse.User.current()
+        const data = {
+            name: user.get("name"),
+            birthDate: user.get("birthday"),
+            height: user.get("height"),
+            weight: user.get("bodweight"),
+            birthSex: user.get("sex"),
+            defaultSplit: user.get("default"),
+        }
+        return data
+    },
 };
 
 export default accountService
