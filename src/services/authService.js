@@ -57,6 +57,15 @@ const authService = {
         await Parse.User.logOut();
 
     },
+    update: async (user, goals) => {
+        try {
+            const currentUser = Parse.User.current();
+            currentUser.set("goals", goals);
+            await currentUser.save();
+        } catch (error) {
+            throw error;
+        }
+    }
     
 };
 

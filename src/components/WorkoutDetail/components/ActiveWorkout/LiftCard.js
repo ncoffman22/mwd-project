@@ -2,15 +2,9 @@ import React, { useState } from 'react';
 import { Card, Button, ProgressBar, ButtonGroup, Form } from 'react-bootstrap';
 import { CheckCircle, XCircle } from 'lucide-react';
 
-const ExerciseCard = ({ 
-    exercise, 
-    progress, 
-    onSetComplete, 
-    onWeightUpdate,
-    editable 
-}) => {
+const LiftCard = ({ lift, progress, onSetComplete, onWeightUpdate, editable }) => {
     const [weights, setWeights] = useState(
-        Array(exercise.sets).fill(exercise.weight)
+        Array(lift.sets).fill(lift.weight)
     );
 
     // Function to handle weight change
@@ -18,14 +12,14 @@ const ExerciseCard = ({
         const updatedWeights = [...weights];
         updatedWeights[setIndex] = Number(newWeight);
         setWeights(updatedWeights);
-        onWeightUpdate(exercise.id, setIndex, Number(newWeight));
+        onWeightUpdate(lift.id, setIndex, Number(newWeight));
     };
 
     // Function to calculate progress
     const calculateProgress = () => {
         if (!progress) return 0;
         const attemptedSets = (progress.passedSets?.length || 0) + (progress.failedSets?.length || 0);
-        return Math.round((attemptedSets / exercise.sets) * 100);
+        return Math.round((attemptedSets / lift.sets) * 100);
     };
 
     // Function to get set status
@@ -40,9 +34,9 @@ const ExerciseCard = ({
             <Card.Header>
                 <div className="d-flex justify-content-between align-items-start mb-2">
                     <div>
-                        <h4 className="mb-0">{exercise.name}</h4>
+                        <h4 className="mb-0">{lift.name}</h4>
                         <small className="text-muted">
-                            Target: {exercise.sets} sets × {exercise.reps} reps
+                            Target: {lift.sets} sets × {lift.reps} reps
                         </small>
                     </div>
                 </div>
@@ -60,7 +54,7 @@ const ExerciseCard = ({
                         {[50, 70, 90].map((percentage) => (
                             <div key={percentage} className="text-center">
                                 <div className="fw-bold">
-                                    {Math.round((exercise.weight * (percentage / 100))/5)*5} lbs
+                                    {Math.round((lift.weight * (percentage / 100))/5)*5} lbs
                                 </div>
                                 <small className="text-muted">{percentage}%</small>
                             </div>
@@ -69,10 +63,11 @@ const ExerciseCard = ({
                 </div>
 
                 {/* Working sets */}
-                {Array.from({ length: exercise.sets }).map((_, idx) => (
+                {Array.from({ length: lift.sets }).map((_, idx) => (
                     <div key={idx} className="bg-light p-3 rounded mb-3">
                         <div className="d-flex align-items-center">
                             <strong className="me-3">Set {idx + 1}:</strong>
+                            {/* I tried making only one weight editable but I ran into trouble so I left it as is */}
                             {editable ? (
                                 <Form.Control
                                     type="number"
@@ -84,18 +79,18 @@ const ExerciseCard = ({
                             ) : (
                                 <span className="me-1">{weights[idx]} lbs.</span>
                             )}
-                            <span className="me-2">x {exercise.reps} reps</span>
+                            <span className="me-2">x {lift.reps} reps</span>
                             <ButtonGroup className="ms-auto">
                                 <Button
                                     variant={getSetStatus(idx) === 'passed' ? "success" : "outline-success"}
-                                    onClick={() => onSetComplete(exercise.id, idx, 'passed')}
+                                    onClick={() => onSetComplete(lift.id, idx, 'passed')}
                                 >
                                     <CheckCircle size={16} className="me-1" />
                                     Pass
                                 </Button>
                                 <Button
                                     variant={getSetStatus(idx) === 'failed' ? "danger" : "outline-danger"}
-                                    onClick={() => onSetComplete(exercise.id, idx, 'failed')}
+                                    onClick={() => onSetComplete(lift.id, idx, 'failed')}
                                 >
                                     <XCircle size={16} className="me-1" />
                                     Fail
@@ -109,4 +104,4 @@ const ExerciseCard = ({
     );
 };
 
-export default ExerciseCard;
+export default LiftCard;

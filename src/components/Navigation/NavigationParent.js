@@ -58,6 +58,13 @@ export default function NavigationParent() {
                         >
                             Wiki
                         </Nav.Link>
+                        <Nav.Link
+                            as={Link}
+                            to="/add-goal"
+                            active={location.pathname === "/add-goal"}
+                        >
+                            Add Goal    
+                        </Nav.Link>
                     </Nav>
                     <Nav>
                     <Nav.Link

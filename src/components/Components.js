@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardContainer from './Dashboard/DashboardContainer';
 import AddWorkoutContainer from './AddWorkout/AddWorkoutContainer';
@@ -10,6 +10,7 @@ import authService from '../services/authService';
 import CalendarContainer from './Calendar/CalendarContainer';
 import WikiContainer from './Wiki/WikiContainer';
 import AccountContainer from './Account/AccountContainer'
+import AddGoalContainer from './AddGoal/AddGoalContainer';
 const Components = () => {
     return (
         <Routes>
@@ -76,6 +77,14 @@ const Components = () => {
                 element={
                     <ProtectedRoutes>
                         <WikiContainer />
+                    </ProtectedRoutes>
+                }
+            />
+            <Route 
+                path="/add-goal" 
+                element={
+                    <ProtectedRoutes>
+                        <AddGoalContainer />
                     </ProtectedRoutes>
                 }
             />

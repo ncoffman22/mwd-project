@@ -5,6 +5,12 @@ import splitService from "./splitService";
 import Parse from "parse";
 import statisticsService from "./statisticsService";
 import authService from "./authService";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const localCache = {
     set: (key, value) => {
@@ -101,8 +107,6 @@ export const getCachedUserLiftTypes = async (userId) => {
             cachedLiftTypes.every(lt => lt instanceof Parse.Object)) {
             return cachedLiftTypes;
         }
-
-        const user = authService.getCurrentUser();
         const liftTypes = await liftTypesService.getLiftTypes();
         localCache.set(cacheKey, liftTypes);
         return liftTypes;
@@ -142,6 +146,89 @@ export const getCachedUserStatistics = async (userId) => {
     }
 };
 
+export const getProcessedWorkouts = async () => {
+    const loadData = async () => {
+        try {
+            const currentUser = authService.getCurrentUser();
+            const userWorkouts = await getCachedUserWorkouts(currentUser.id);
+            const userLifts = await getCachedUserLifts(currentUser.id);
+            const liftTypes = await getCachedUserLiftTypes(currentUser.id);
+            const processedWorkouts = [];
+            for (let i = 0; i < userWorkouts.length; i++) {
+                const workout = userWorkouts[i];
+                const liftPromises = [];
+                // Gather all lifts from the workout (lift1 through lift8)
+                for (let i = 1; i <= 8; i++) {
+                    const liftKey = `lift${i}`;
+                    const lift = workout.get(liftKey);
+                    if (lift) {
+                        try {
+                            const liftData = await userLifts.find((l) => l.id === lift.id);
+                            liftPromises.push(liftData);
+                        } catch (error) {
+                            console.error(`Error fetching lift ${i}:`, error);
+                        }
+                    }
+                }
+
+                const lifts = await Promise.all(liftPromises);
+                const liftDetails = await Promise.all(
+                    lifts.map(async (lift) => {
+                        if (!lift) return null;
+                        
+                        try {
+                            const liftType = lift.get('liftType');
+                            const liftTypeDetails = await liftTypes.filter((lt) => lt.id === liftType.id);
+                            if (!liftTypeDetails) return null;
+
+                            return {
+                                id: lift.id,
+                                name: liftTypeDetails[0].get('name'),
+                                sets: lift.get('sets'),
+                                reps: lift.get('reps'),
+                                weight: lift.get('weight'),
+                                type: liftTypeDetails[0].get('type'),
+                                bodyPart: liftTypeDetails[0].get('bodyPart'),
+                                completed: lift.get('completed'),
+                                passedSets: lift.get('passedSets'),
+                                failedSets: lift.get('failedSets'),
+                                liftType: liftType
+                            };
+                        } catch (error) {
+                            console.error('Error processing lift details:', error);
+                            return null;
+                        }
+                    })
+                );
+
+                const validLifts = liftDetails.filter(Boolean);
+
+                // Get the datePerformed and adjust for timezone
+                const datePerformed = workout.get('datePerformed');
+                const adjustedDate = dayjs(datePerformed)
+                    .add(datePerformed.getTimezoneOffset(), 'minutes')
+                    .toDate();
+
+                processedWorkouts.push( {
+                    id: workout.id,
+                    completed: workout.get('completed'),
+                    date: adjustedDate, // Use the timezone-adjusted date
+                    split: workout.get('split') ? workout.get('split') : null,
+                    bodyParts: workout.get('split') ? workout.get('split').get(`day${workout.get('day')}`) : [],
+                    splitName: workout.get('split') ? workout.get('split').get('name') : 'No Split',
+                    day: workout.get('day') || 'Unassigned',
+                    lifts: validLifts,
+                    totalExercises: validLifts.length,
+                    originalWorkout: workout
+                });
+            }
+            return processedWorkouts;
+        } catch (error) {
+            throw error;
+        }
+    };
+    loadData();
+};
 // Rest of the invalidation functions remain the same
 export const invalidateAllCaches = () => {
     localStorage.removeItem('currentUser');

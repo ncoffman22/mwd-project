@@ -1,43 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import Fuse from 'fuse.js';
-import WikiChild from './WikiChild';
 import { getCachedUserLiftTypes, getCachedSplits } from '../../services/cacheService';
+import { Tabs, Tab, Card } from 'react-bootstrap';
+import LiftTypeList from './components/LiftType/LiftTypeList';
+import SplitList from './components/Split/SplitList';
+import SearchBar from './components/LiftType/SearchBar';
+
 const WikiParent = () => {
-    const [exercises, setExercises] = useState([]);
-    const [splits, setSplits] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('exercises');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filters, setFilters] = useState({
-        bodyPart: '',
-        equipment: '',
-        level: ''
+    const [data, setData] = useState({
+        liftTypes: [],
+        splits: [],
+        loading: true,
+        activeTab: 'exercises',
+        searchTerm: '',
+        filters: {
+            bodyPart: '',
+            equipment: '',
+            level: ''
+        },
+        fuse: null
     });
-    
-    // State for the Fuse instance
-    const [fuse, setFuse] = useState(null);
+
+    // Function to update data in state
+    const updateData = (field, item) => {
+        setData(prev => ({
+            ...prev,
+            [field]: item
+        }));
+    };
+
+    // Function to handle filter changes
+    const handleFilterChange = (filterType, value) => {
+        setData(prev => ({
+            ...prev,
+            filters: {
+                ...prev.filters,
+                [filterType]: value
+            }
+        }));
+    };
 
     // Load data on component mount
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [exerciseData, splitData] = await Promise.all([
+                const [liftTypeData, splitData] = await Promise.all([
                     getCachedUserLiftTypes(),
                     getCachedSplits()
                 ]);
-                setExercises(exerciseData);
-                setSplits(splitData);
                 
                 // Initialize Fuse instance
                 const fuseOptions = {
                     keys: [
                         {
                             name: 'name',
-                            getFn: (exercise) => exercise.get('name')
+                            getFn: (liftType) => liftType.get('name')
                         },
                         {
                             name: 'desc',
-                            getFn: (exercise) => exercise.get('desc')
+                            getFn: (liftType) => liftType.get('desc')
                         }
                     ],
                     threshold: 0.3,
@@ -45,72 +66,80 @@ const WikiParent = () => {
                     distance: 100,
                     minMatchCharLength: 2
                 };
-                setFuse(new Fuse(exerciseData, fuseOptions));
+
+                const fuse = new Fuse(liftTypeData, fuseOptions);
+                
+                setData(prev => ({
+                    ...prev,
+                    liftTypes: liftTypeData,
+                    splits: splitData,
+                    fuse: fuse
+                }));
             } catch (error) {
                 console.error('Error loading data:', error);
+                setData(prev => ({ ...prev, loading: false }));
             } finally {
-                setLoading(false);
+                setData(prev => ({ ...prev, loading: false }));
             }
         };
         loadData();
     }, []);
 
-    // Handle search term change
-    const handleSearch = (term) => {
-        setSearchTerm(term);
-    };
-
-    // Handle filter change
-    const handleFilterChange = (filterType, value) => {
-        setFilters(prev => ({
-            ...prev,
-            [filterType]: value
-        }));
-    };
-
-    // Clear a filter
-    const clearFilter = (filterType) => {
-        setFilters(prev => ({
-            ...prev,
-            [filterType]: ''
-        }));
-    };
-
     // Function to get the filtered exercises based on search term and filters
     const getFilteredExercises = () => {
-        let results = exercises;
+        let results = data.liftTypes;
 
-        // If there's a search term and Fuse is initialized, use fuzzy search
-        if (searchTerm && fuse) {
-            results = fuse.search(searchTerm).map(result => result.item);
+        // Apply search if there's a search term
+        if (data.searchTerm && data.fuse) {
+            const searchResults = data.fuse.search(data.searchTerm);
+            results = searchResults.map(result => result.item);
         }
-
         // Apply filters
-        return results.filter(exercise => {
-            const matchesBodyPart = !filters.bodyPart || exercise.get('bodyPart') === filters.bodyPart;
-            const matchesEquipment = !filters.equipment || exercise.get('equipment') === filters.equipment;
-            const matchesLevel = !filters.level || exercise.get('level') === filters.level;
+        return results.filter(liftType => {
+            const matchesBodyPart = !data.filters.bodyPart || liftType.get('bodyPart') === data.filters.bodyPart;
+            const matchesEquipment = !data.filters.equipment || liftType.get('equipment') === data.filters.equipment;
+            const matchesLevel = !data.filters.level || liftType.get('level') === data.filters.level;
             
             return matchesBodyPart && matchesEquipment && matchesLevel;
         });
     };
 
-    // Get the filtered exercises
     const filteredExercises = getFilteredExercises();
 
     return (
-        <WikiChild 
-            exercises={filteredExercises}
-            splits={splits}
-            loading={loading}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            searchTerm={searchTerm}
-            onSearch={handleSearch}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilter={clearFilter}
-        />
+        <Card className="mt-4">
+            <Card.Header className="bg-primary text-white">
+                <h2>Exercise & Split Wiki</h2>
+            </Card.Header>
+            <Card.Body>
+                <Tabs
+                    activeKey={data.activeTab}
+                    onSelect={(key) => updateData('activeTab', key)}
+                    className="mb-4"
+                >
+                    <Tab eventKey="exercises" title={`Exercises (${filteredExercises.length})`}>
+                        <div className="mb-4">
+                            <SearchBar 
+                                data={data}
+                                onSearchChange={(term) => updateData('searchTerm', term)}
+                                onFilterChange={handleFilterChange}
+                            />
+                        </div>
+                        <LiftTypeList 
+                            liftTypes={filteredExercises}
+                            loading={data.loading}
+                        />
+                    </Tab>
+                    <Tab eventKey="splits" title={`Splits (${data.splits.length})`}>
+                        <SplitList 
+                            splits={data.splits}
+                            loading={data.loading}
+                        />
+                    </Tab>
+                </Tabs>
+            </Card.Body>
+        </Card>
     );
-}
+};
+
 export default WikiParent;

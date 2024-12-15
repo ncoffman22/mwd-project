@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Spinner } from 'react-bootstrap';
 import SplitCard from './SplitCard';
 
-export default function SplitList({ splits, loading }) {
+const SplitList = ({ splits, loading }) => {
     if (loading) {
         return (
             <div className="text-center py-4">
@@ -30,4 +30,5 @@ export default function SplitList({ splits, loading }) {
             ))}
         </Row>
     );
-}
+};
+export default SplitList;

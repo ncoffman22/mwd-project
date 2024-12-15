@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Badge } from 'react-bootstrap';
 
-export default function SplitCard({ split }) {
+const SplitCard = ({ split }) => {
     return (
         <Card>
             <Card.Body>
@@ -19,4 +19,5 @@ export default function SplitCard({ split }) {
             </Card.Body>
         </Card>
     );
-}
+};
+export default SplitCard;

@@ -1,54 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { Container, Alert } from 'react-bootstrap';
+import { Spinner, Alert } from 'react-bootstrap';
 import ActiveWorkoutView from './components/ActiveWorkout/ActiveWorkoutView';
 import CompletedWorkoutView from './components/CompletedWorkout/CompletedWorkoutView';
-import workoutsService from '../../services/workoutsService';
+import { getCachedUserWorkouts } from '../../services/cacheService';
+import authService from '../../services/authService';
 
 const WorkoutDetailParent = () => {
     const { workoutId } = useParams();
-    const { state } = useLocation();
+    const { state } = useLocation(); // Get the state from the location object
     const [workout, setWorkout] = useState(state?.workout || null);
-    const [loading, setLoading] = useState(!state?.workout);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
+    const user = authService.getCurrentUser();
+    
     useEffect(() => {
         const loadWorkout = async () => {
             if (state?.workout) return;
-
             try {
-                const workoutData = await workoutsService.oGetWorkout(workoutId);
-                setWorkout(workoutData);
+                const workoutData = await getCachedUserWorkouts(user.id);
+                const workout = workoutData.find(w => w.id === workoutId);
+                console.log(workout);
+                setWorkout(workout);
+                setLoading(false);
+
             } catch (error) {
                 setError('Error loading workout details');
                 console.error(error);
-            } finally {
-                setLoading(false);
             }
         };
 
         if (!state?.workout) {
             loadWorkout();
         }
-    }, [workoutId, state?.workout]);
+    }, [workoutId, state?.workout, user.id]);
 
-    if (loading) {
+    if (!loading) {
         return (
-            <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </Container>
-        );
+            <div className="text-center">
+                <h2>Loading workout...</h2>
+                <Spinner animation="border" role="status" />
+            </div>
+        )
     }
-
     if (error) {
-        return <Alert variant="danger">{error}</Alert>;
+        return (
+            <Alert variant="danger">
+                Sorry we cannot load your workout at this time: {error}
+            </Alert>
+        )
     }
     return (
         <div>
             {workout?.completed ? (
-                <CompletedWorkoutView workout={workout} onWorkoutUpdate={setWorkout} />
+                <CompletedWorkoutView workout={workout} />
             ) : (
                 <ActiveWorkoutView workout={workout} onWorkoutUpdate={setWorkout} />
             )}

@@ -16,20 +16,20 @@ const SummarySection = ({ workout }) => {
 
         if (!workout || !workout.lifts) return stats;
 
-        workout.lifts.forEach(exercise => {
+        workout.lifts.forEach(lift => {
             // Get total sets for this exercise
-            stats.totalSets += exercise.sets;
+            stats.totalSets += lift.sets;
 
             // Count passed and failed sets
-            stats.passedSets += exercise.passedSets?.length || 0;
-            stats.failedSets += exercise.failedSets?.length || 0;
+            stats.passedSets += lift.passedSets?.length || 0;
+            stats.failedSets += lift.failedSets?.length || 0;
 
             // Calculate volume for this exercise
-            const exerciseVolume = exercise.weight * exercise.reps * exercise.sets;
+            const exerciseVolume = lift.weight * lift.reps * lift.sets;
             stats.totalVolume += exerciseVolume;
 
             // Track weight per exercise
-            stats.weightPerExercise[exercise.name] = exercise.weight;
+            stats.weightPerExercise[lift.name] = lift.weight;
         });
 
         // Calculate success rate

@@ -1,29 +1,47 @@
 import React, { useState } from 'react';
-import { Calendar, Radio, Typography, Select, Space, Button } from 'antd';
+import { Calendar, Radio, Select, Button } from 'antd';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-import WeekView from './components/WeekView/WeekView';
-import DateCellRender from './components/DateCell/DateCellRender';
+import WeekView from './components/WeekView';
+import DateCellRender from './components/DateCellRender';
+import "./styles/calendarStyle.css";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
-const { Text } = Typography;
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
-const CalendarChild = ({ workouts = [] }) => {
-    const [view, setView] = useState('month');
+const CalendarChild = ({ data }) => {
+    const [view, setView] = useState('week');
     const [selectedDate, setSelectedDate] = useState(dayjs());
-    const navigate = useNavigate();
 
-    const handleWorkoutClick = (workout) => {
-        navigate(`/workout/${workout.id}`, { state: { workout } });
+    
+    const getWorkoutsForDay = (date) => {
+        return data.workouts.filter(workout => {
+            // Convert both dates to start of day for comparison
+            const workoutDate = dayjs(workout.date).startOf('day');
+            return workoutDate.isSame(date.startOf('day'), 'day');
+        });
     };
 
-    const handleDateSelect = (date) => {
-        setSelectedDate(date);
-    };
+    const getWorkoutLength = (workout) => {
+        for (let i = 1; i <= 8; i++) {
+            const dayKey = `day${i}`;
+            if (!workout[dayKey]) {
+                return i-1;
+            }
+        }
+        return 8;
+    }
 
     const handleViewChange = (e) => {
         const newView = e.target.value;
         setView(newView);
+    };
+
+    const handleDateChange = (unit, amount) => {
+        const newDate = selectedDate.add(amount, unit);
+        setSelectedDate(newDate);
     };
 
     // Custom header renderer for the Calendar
@@ -41,28 +59,6 @@ const CalendarChild = ({ workouts = [] }) => {
             label: `${year - 10 + i}`
         }));
 
-        const handlePrevMonth = () => {
-            onChange(value.subtract(1, 'month'));
-            setSelectedDate(value.subtract(1, 'month'));
-        };
-
-        const handleNextMonth = () => {
-            onChange(value.add(1, 'month'));
-            setSelectedDate(value.add(1, 'month'));
-        };
-
-        const handleMonthChange = (newMonth) => {
-            const newDate = value.month(newMonth);
-            onChange(newDate);
-            setSelectedDate(newDate);
-        };
-
-        const handleYearChange = (newYear) => {
-            const newDate = value.year(newYear);
-            onChange(newDate);
-            setSelectedDate(newDate);
-        };
-
         return (
             <div style={{ 
                 display: 'flex', 
@@ -72,7 +68,7 @@ const CalendarChild = ({ workouts = [] }) => {
                 padding: '8px'
             }}>
                 <Button 
-                    onClick={handlePrevMonth}
+                    onClick={() => handleDateChange('month', -1)}
                     style={{ margin: 0 }}
                 >
                     <ChevronLeft className="h-4 w-4" />
@@ -84,19 +80,19 @@ const CalendarChild = ({ workouts = [] }) => {
                 }}>
                     <Select
                         value={month}
-                        onChange={handleMonthChange}
+                        onChange={(value) => onChange('month', value)}
                         options={months}
                         style={{ width: 120 }}
                     />
                     <Select
                         value={year}
-                        onChange={handleYearChange}
+                        onChange={(value) => onChange('year', value)}
                         options={years}
                         style={{ width: 100 }}
                     />
                 </div>
                 <Button 
-                    onClick={handleNextMonth}
+                    onClick={() => handleDateChange('month', 1)}
                     style={{ margin: 0 }}
                 >
                     <ChevronRight className="h-4 w-4" />
@@ -112,7 +108,7 @@ const CalendarChild = ({ workouts = [] }) => {
                     <div className="flex gap-2 mb-3 text-center">
                         <CalendarIcon className="h-6 w-6 text-blue-500" />
                         <br />
-                        <h3 strong>Workout Calendar</h3>
+                        <h3>Workout Calendar</h3>
                     </div>
                     <Radio.Group 
                         value={view} 
@@ -132,22 +128,24 @@ const CalendarChild = ({ workouts = [] }) => {
                             if (info.type === 'date') return (
                                 <DateCellRender 
                                     value={value} 
-                                    workouts={workouts} 
-                                    handleWorkoutClick={handleWorkoutClick}
+                                    data={data}
+                                    getWorkoutLength={getWorkoutLength}
+                                    getWorkoutsForDay={getWorkoutsForDay}
                                 />
                             );
                             return info.originNode;
                         }}
                         fullscreen={true}
-                        onSelect={handleDateSelect}
+                        onSelect={(date) => setSelectedDate(date)}
                         value={selectedDate}
                         headerRender={customHeader}
                     />
                 ) : (
                     <WeekView
-                        workouts={workouts}
-                        onWorkoutClick={handleWorkoutClick}
+                        data={data}
                         selectedDate={selectedDate}
+                        getWorkoutsForDay={getWorkoutsForDay}
+                        getWorkoutLength={getWorkoutLength}
                     />
                 )}
             </div>

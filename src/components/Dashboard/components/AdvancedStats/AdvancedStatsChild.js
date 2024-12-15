@@ -5,10 +5,21 @@ import {
     Tooltip, Legend, ResponsiveContainer, RadarChart, Radar, 
     PolarGrid, PolarAngleAxis, PolarRadiusAxis 
 } from 'recharts';
+import timezone from 'dayjs/plugin/timezone';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
 const AdvancedStatsChild = ({ statistics = [] }) => {
     const [selectedLiftType, setSelectedLiftType] = useState('all');
     const [timeRange, setTimeRange] = useState('month');
+
+    const adjustedDay = ({ date }) => {
+        return dayjs(date)
+            .subtract(dayjs().utcOffset(), 'minutes')
+            .format('YYYY-MM-DD');
+    };
 
     const getFilteredStats = () => {
         if (!Array.isArray(statistics)) return [];
@@ -77,7 +88,7 @@ const AdvancedStatsChild = ({ statistics = [] }) => {
         const filteredStats = getFilteredStats();
         const volstats = filteredStats.flatMap(stat => 
             (stat?.volumeIntensity?.progression || []).map(prog => ({
-                date: new Date(prog.date).toLocaleDateString(),
+                date: adjustedDay(prog.date.iso),
                 intensity: prog.intensity || 0,
                 exercise: stat?.liftType?.name || 'Unknown'
             }))

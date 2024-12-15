@@ -1,17 +1,18 @@
 import {Parse} from 'parse';
 
 const splitService = {
-    addSplit: async(name, description, days, day1, day2, day3, day4, day5, day6, user) => {
+    addSplit: async(name, description, days, day1=[], day2=[], day3=[], day4=[], day5=[], day6=[], user=null) => {
         const newSplit = new Parse.Object('WorkoutSplits');
         newSplit.set('name', name);
         newSplit.set('description', description);
         newSplit.set('days', days);
-        newSplit.set('day1', day1);
-        newSplit.set('day2', day2);
-        newSplit.set('day3', day3);
-        newSplit.set('day4', day4);
-        newSplit.set('day5', day5);
-        newSplit.set('day6', day6);
+        newSplit.set('day1', day1.length > 0 ? day1 : null);
+        newSplit.set('day2', day2.length > 0 ? day2 : null);
+        newSplit.set('day3', day3.length > 0 ? day3 : null);
+        newSplit.set('day4', day4.length > 0 ? day4 : null);
+        newSplit.set('day5', day5.length > 0 ? day5 : null);
+        newSplit.set('day6', day6.length > 0 ? day6 : null);
+        console.log('user:', user);
         newSplit.set('userSpecific', user);
         try {
             const result = await newSplit.save();

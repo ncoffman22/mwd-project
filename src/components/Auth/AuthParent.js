@@ -3,9 +3,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 import AuthChild from "./AuthChild";
-import workoutService from "../../services/workoutsService";
 
-export default function AuthParent({setWorkouts}) {
+export default function AuthParent() {
     const [credentials, setCredentials] = useState({
         username: "",
         password: "",
@@ -32,13 +31,11 @@ export default function AuthParent({setWorkouts}) {
                     credentials.username,
                     credentials.password
                 );
-                const user = authService.getCurrentUser().get("username") // get the current user
             } else {
                 await authService.register(
                     credentials.username,
                     credentials.password
                 ); // For register, this will occur
-                const user = authService.getCurrentUser().get("username")
             }
             navigate("/");
         } catch (error) {

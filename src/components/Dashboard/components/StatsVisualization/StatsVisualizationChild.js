@@ -1,10 +1,23 @@
 import React, { useState } from 'react';
 import { Card, Row, Col, Form } from 'react-bootstrap';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import dayjs from 'dayjs';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
 const StatsVisualizationChild = ({ statistics }) => {
     const [selectedLiftType, setSelectedLiftType] = useState('all');
 
+    // Adjust day to local timezone
+    const adjustedDay = ({ date }) => {
+        return dayjs(date)
+            .subtract(dayjs().utcOffset(), 'minutes')
+            .format('YYYY-MM-DD');
+    };
+
+    // Filter statistics based on selected lift type
     const getFilteredStats = () => {
         if (selectedLiftType === 'all') {
 
@@ -14,25 +27,27 @@ const StatsVisualizationChild = ({ statistics }) => {
         return statistics.filter(stat => stat.liftType.objectId === selectedLiftType);
     };
 
+    // Get 1RM data
     const getOneRMData = () => {
         const filteredStats = getFilteredStats();
-        const oneRMData =  filteredStats.flatMap(stat =>
+        const oneRMData = filteredStats.flatMap(stat =>
             stat.oneRMProgression.map(prog => ({
-                date: new Date(prog.date).toLocaleDateString(),
+                date: adjustedDay({ date: prog.date }),
                 weight: prog.value,
                 liftType: stat.liftType
             }))
         );
-        // sort by date
-        oneRMData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        oneRMData.sort((a, b) => a.date.localeCompare(b.date));
         return oneRMData;
     };
 
+    // Get volume data
     const getVolumeData = () => {
         const filteredStats = getFilteredStats();
         const volumeData = filteredStats.flatMap(stat => 
             stat.volumeProgression.map(prog => ({
-                date: new Date(prog.date).toLocaleDateString(),
+                date: adjustedDay({ date: prog.date }),
                 volume: prog.value,
                 exercise: stat.liftType.name
             }))
@@ -69,62 +84,7 @@ const StatsVisualizationChild = ({ statistics }) => {
         return topExercises;
     };
 
-    // Custom colors that are visually distinct
     const COLORS = ['#2196F3', '#4CAF50', '#FFC107', '#FF5722', '#9C27B0', '#90CAF9'];
-
-    // Custom tooltip formatter
-    const customTooltip = ({ active, payload }) => {
-        if (active && payload && payload.length) {
-            return (
-                <div style={{ 
-                    backgroundColor: '#fff',
-                    padding: '8px',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px'
-                }}>
-                    <p style={{ margin: 0 }}>{`${payload[0].name}`}</p>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>
-                        {`${Math.round(payload[0].value).toLocaleString()} lbs`}
-                    </p>
-                </div>
-            );
-        }
-        return null;
-    };
-
-    // Custom legend that wraps better
-    const renderLegend = (props) => {
-        const { payload } = props;
-        
-        return (
-            <div style={{ 
-                display: 'flex', 
-                flexWrap: 'wrap', 
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '8px'
-            }}>
-                {payload.map((entry, index) => (
-                    <div 
-                        key={`legend-${index}`}
-                        style={{ 
-                            display: 'flex', 
-                            alignItems: 'center',
-                            marginRight: '8px'
-                        }}
-                    >
-                        <div style={{
-                            width: '12px',
-                            height: '12px',
-                            backgroundColor: entry.color,
-                            marginRight: '4px'
-                        }} />
-                        <span style={{ fontSize: '12px' }}>{entry.value}</span>
-                    </div>
-                ))}
-            </div>
-        );
-    };
 
     return (
         <div className="p-3">
@@ -151,8 +111,83 @@ const StatsVisualizationChild = ({ statistics }) => {
                 </Card.Header>
                 
                 <Card.Body>
-                    <Row>
-                        <Col md={6} className="mb-4">
+                    {selectedLiftType === 'all' ? (
+                        <Row>
+                            <div>
+                                <Col md={6} className="mb-4">
+                                    <Card>
+                                        <Card.Header>Volume Progression</Card.Header>
+                                        <Card.Body>
+                                            <div style={{ height: 300 }}>
+                                                <ResponsiveContainer>
+                                                    <BarChart data={getVolumeData()}>
+                                                        <CartesianGrid strokeDasharray="3 3" />
+                                                        <XAxis dataKey="date" />
+                                                        <YAxis />
+                                                        <Tooltip />
+                                                        <Legend />
+                                                        <Bar 
+                                                            dataKey="volume" 
+                                                            fill="#4CAF50" 
+                                                            name="Volume (lbs)"
+                                                        />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col md={6} className="mb-4">
+                                    <Card>
+                                        <Card.Header>Exercise Distribution</Card.Header>
+                                        <Card.Body>
+                                            <div style={{ height: '30vh' }}>
+                                                <ResponsiveContainer>
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={getExerciseDistribution()}
+                                                            dataKey="value"
+                                                            nameKey="name"
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            outerRadius={100}
+                                                            fill="#8884d8"
+                                                            label
+                                                            activeIndex={-1}
+                                                            activeShape={null}
+                                                            isAnimationActive={false}
+                                                        >
+                                                            {getExerciseDistribution().map((entry, index) => (
+                                                                <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                                                            ))}
+                                                        </Pie>
+                                                        <Tooltip content={ ({ active, payload }) => {
+                                                            if (!active || !payload || !payload.length) return null;
+                                                            const { name, value } = payload[0].payload;
+                                                            return (
+                                                                <div style={{                     
+                                                                    backgroundColor: '#fff',
+                                                                    padding: '8px',
+                                                                    border: '1px solid #ccc',
+                                                                    borderRadius: '4px'}}>
+                                                                    <p className="mb-1">{name}</p>
+                                                                    <p className="mb-0">{`Volume: ${value.toLocaleString()} lbs`}</p>
+                                                                </div>
+                                                            );
+                                                        }
+                                                        }/>
+                                                        <Legend />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </div>
+                        </Row>
+                        ) : (
+                        <Row>
+                            <Col md={6} className="mb-4">
                             <Card>
                                 <Card.Header>1RM Progress Over Time</Card.Header>
                                 <Card.Body>
@@ -176,70 +211,6 @@ const StatsVisualizationChild = ({ statistics }) => {
                                 </Card.Body>
                             </Card>
                         </Col>
-
-                        <Col md={6} className="mb-4">
-                            <Card>
-                                <Card.Header>Volume Progression</Card.Header>
-                                <Card.Body>
-                                    <div style={{ height: 300 }}>
-                                        <ResponsiveContainer>
-                                            <BarChart data={getVolumeData()}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="date" />
-                                                <YAxis />
-                                                <Tooltip />
-                                                <Legend />
-                                                <Bar 
-                                                    dataKey="volume" 
-                                                    fill="#4CAF50" 
-                                                    name="Volume (lbs)"
-                                                />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
-
-                    <Row>
-                        <Col md={6} className="mb-4">
-                            <Card>
-                                <Card.Header>Exercise Distribution</Card.Header>
-                                <Card.Body>
-                                    <div style={{ height: 300 }}>
-                                        <ResponsiveContainer>
-                                            <PieChart>
-                                                <Pie
-                                                    data={getExerciseDistribution()}
-                                                    cx="50%"
-                                                    cy="45%"
-                                                    innerRadius={60}
-                                                    outerRadius={80}
-                                                    fill="#8884d8"
-                                                    dataKey="value"
-                                                    // Remove labelLine and label props
-                                                >
-                                                    {getExerciseDistribution().map((entry, index) => (
-                                                        <Cell 
-                                                            key={`cell-${index}`} 
-                                                            fill={COLORS[index % COLORS.length]} 
-                                                        />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip content={customTooltip} />
-                                                <Legend 
-                                                    content={renderLegend}
-                                                    verticalAlign="bottom"
-                                                    align="center"
-                                                />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-
                         <Col md={6} className="mb-4">
                             <Card>
                                 <Card.Header>Key Statistics</Card.Header>
@@ -272,6 +243,7 @@ const StatsVisualizationChild = ({ statistics }) => {
                             </Card>
                         </Col>
                     </Row>
+                        )}
                 </Card.Body>
             </Card>
         </div>

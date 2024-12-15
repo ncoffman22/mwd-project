@@ -1,73 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from 'react-bootstrap';
-import WorkoutHeader from '../WorkoutHeader';
 import ExerciseResult from './ExerciseResult';
 import SummarySection from './SummarySection';
-import workoutsService from '../../../../services/workoutsService';
-import liftsService from '../../../../services/liftsService';
+import { useNavigate } from 'react-router-dom';
 
-const CompletedWorkoutView = ({ workout, onWorkoutUpdate }) => {
-    const [editing, setEditing] = useState(false);
-    
-    // Toggle editing mode
-    const handleEdit = () => {
-        setEditing(!editing);
-    };
-
-    const handleSave = async (updatedExercise) => {
-        try {
-            // Update the individual lift
-            await liftsService.updateLift(updatedExercise.id, {
-                weight: updatedExercise.weight,
-                passedSets: updatedExercise.passedSets || [],
-                failedSets: updatedExercise.failedSets || [],
-                setDetails: updatedExercise.setDetails || {}
-            });
-
-            // Update the workout data in state
-            onWorkoutUpdate(prevWorkout => ({
-                ...prevWorkout,
-                lifts: prevWorkout.lifts.map(lift => 
-                    lift.id === updatedExercise.id ? updatedExercise : lift
-                )
-            }));
-
-            // Update the overall workout if needed
-            await workoutsService.updateWorkout(workout.id, {
-                ...workout,
-                lifts: workout.lifts.map(lift => 
-                    lift.id === updatedExercise.id ? updatedExercise : lift
-                )
-            });
-        } catch (error) {
-            console.error('Error updating exercise:', error);
-        }
-    };
-
+const CompletedWorkoutView = ({ workout }) => {
+    const navigate = useNavigate();
     return (
         <>
-            <WorkoutHeader 
-                title={workout.splitName} 
-                day={workout.day}
-                rightContent={
-                    <Button
-                        variant="primary"
-                        onClick={handleEdit}
-                        className="ms-3"
-                    >
-                        {editing ? 'Save Changes' : 'Edit Results'}
-                    </Button>
-                }
-            />
-            
+        <div className="d-flex align-items-center mb-4">
+            <Button 
+                variant="outline-primary"
+                onClick={() => navigate(-1)}
+                className="me-3"
+            >
+                Back
+            </Button>
+            <h2 className="flex-grow-1 mb-0 text-center">
+                {workout.splitName} - Day {workout.day}
+            </h2>
+        </div>    
             <SummarySection workout={workout} />
             
-            {workout.lifts.map(exercise => (
+            {workout.lifts.map(lift => (
                 <ExerciseResult
-                    key={exercise.id}
-                    exercise={exercise}
-                    editable={editing}
-                    onSave={handleSave}
+                    key={lift.id}
+                    lift={lift}
                 />
             ))}
         </>

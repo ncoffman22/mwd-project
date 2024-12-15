@@ -1,0 +1,43 @@
+/* have to !important overrides due to Ant Design CSS specificity */
+.ant-picker-calendar {
+    height: 100vh; /* Full viewport height */
+    padding: 0 !important; /* Full viewport width */
+    width: 100% !important;
+}
+
+.ant-picker-cell {
+    width: auto !important;
+}
+.ant-picker-content {
+    width: 100% !important;
+    table-layout: fixed;
+}
+/* Calendar Cells */
+.ant-picker-calendar-date {
+    height: calc((200vh - 300px) / 6) !important; 
+    min-height: 100px !important;
+    transition: all 0.3s ease;
+    display: flex;
+    width: 10vh;
+}
+
+/* Cell Content */
+.ant-picker-calendar-date-content {
+    height: calc(100% - 24px) !important;
+}
+
+/* Hover Effect */
+.ant-picker-cell:hover .ant-picker-calendar-date {
+background: #f5f5f5;
+}
+
+
+.week-view-list .list-group-item {
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    border-bottom: 1px solid rgba(0,0,0,.125);
+}
+.week-view-list .list-group-item:last-child {
+    border-bottom: 0;
+}

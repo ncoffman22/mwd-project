@@ -1,66 +1,54 @@
 import React, { useState } from 'react';
-import { Button, Container, Spinner } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import WorkoutHeader from '../WorkoutHeader';
-import ExerciseCard from './ExerciseCard';
+import LiftCard from './LiftCard';
 import ProgressSection from './ProgressSection';
 import workoutsService from '../../../../services/workoutsService';
 import liftsService from '../../../../services/liftsService';
 
 const ActiveWorkoutView = ({ workout, onWorkoutUpdate }) => {
     const [editable, setEditable] = useState(false);
-    const [exerciseProgress, setExerciseProgress] = useState({});
+    const [liftProgress, setLiftProgress] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
 
-    // If the workout is not loaded yet, show a loading spinner
-    if (!workout) {
-        return (
-            <Container className="d-flex justify-content-center align-items-center" style={{ height: '300px' }}>
-                <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </Spinner>
-            </Container>
-        );
-    }
-
     // handle the completion of a set
-    const handleSetComplete = async (exerciseId, setIndex, status) => {
+    const handleSetComplete = async (liftId, setIndex, status) => {
         if (isSubmitting) return;
 
         // Update the set status in state
         try {
-            setExerciseProgress(prev => {
+            setLiftProgress(prev => {
                 // go through the previous state and update the exercise
-                const currentExercise = prev[exerciseId] || { passedSets: [], failedSets: [] };
-                const updatedExercise = {
-                    ...currentExercise,
+                const currentLift = prev[liftId] || { passedSets: [], failedSets: [] };
+                const updatedLift = {
+                    ...currentLift,
                     passedSets: status === 'passed' 
-                        ? [...new Set([...currentExercise.passedSets, setIndex])]
-                        : currentExercise.passedSets.filter(set => set !== setIndex),
+                        ? [...new Set([...currentLift.passedSets, setIndex])]
+                        : currentLift.passedSets.filter(set => set !== setIndex),
                     failedSets: status === 'failed'
-                        ? [...new Set([...currentExercise.failedSets, setIndex])]
-                        : currentExercise.failedSets.filter(set => set !== setIndex)
+                        ? [...new Set([...currentLift.failedSets, setIndex])]
+                        : currentLift.failedSets.filter(set => set !== setIndex)
                 };
                 
                 return {
                     ...prev,
-                    [exerciseId]: updatedExercise
+                    [liftId]: updatedLift
                 };
             });
             
             // Update the lift in the database if all sets are completed
-            const exercise = workout.lifts.find(ex => ex.id === exerciseId);
-            if (!exercise) return;
+            const lift = workout.lifts.find(ex => ex.id === liftId);
+            if (!lift) return;
             
             // Calculate the total number of sets attempted
-            const currentProgress = exerciseProgress[exerciseId] || { passedSets: [], failedSets: [] };
+            const currentProgress = liftProgress[liftId] || { passedSets: [], failedSets: [] };
             const totalAttempted = currentProgress.passedSets.length + currentProgress.failedSets.length;
             
             // If all sets are completed, update the lift
-            if (totalAttempted === exercise.sets) {
-                const success = currentProgress.passedSets.length / exercise.sets >= 0.5;
-                await liftsService.updateLift(exerciseId, {
+            if (totalAttempted === lift.sets) {
+                const success = currentProgress.passedSets.length / lift.sets >= 0.5;
+                await liftsService.updateLift(liftId, {
                     completed: true,
                     success: success,
                     passedSets: currentProgress.passedSets,
@@ -73,18 +61,18 @@ const ActiveWorkoutView = ({ workout, onWorkoutUpdate }) => {
     };
 
     // handle the update of the weight for an exercise
-    const handleWeightUpdate = async (exerciseId, setIndex, weight) => {
+    const handleWeightUpdate = async (liftId, weight) => {
         if (isSubmitting) return;
 
         try {
-            await liftsService.updateLift(exerciseId, {
+            await liftsService.updateLift(liftId, {
                 weight: Number(weight)
             });
             
             onWorkoutUpdate({
                 ...workout,
                 lifts: workout.lifts.map(lift => 
-                    lift.id === exerciseId 
+                    lift.id === liftId 
                         ? { ...lift, weight: Number(weight) }
                         : lift
                 )
@@ -100,18 +88,16 @@ const ActiveWorkoutView = ({ workout, onWorkoutUpdate }) => {
 
         setIsSubmitting(true);
         try {
-            await workoutsService.updateWorkout(workout.originalWorkout.id, {
+            await workoutsService.updateWorkout(workout.id, {
                 completed: true,
                 completedAt: new Date()
             });
 
-            await Promise.all(workout.lifts.map(exercise => {
-                const progress = exerciseProgress[exercise.id] || { passedSets: [], failedSets: [] };
-                const success = progress.passedSets.length / exercise.sets >= 0.5;
+            await Promise.all(workout.lifts.map(lift => {
+                const progress = liftProgress[lift.id] || { passedSets: [], failedSets: [] };
 
-                return liftsService.updateLift(exercise.id, {
+                return liftsService.updateLift(lift.id, {
                     completed: true,
-                    success: success,
                     passedSets: progress.passedSets,
                     failedSets: progress.failedSets
                 });
@@ -132,7 +118,7 @@ const ActiveWorkoutView = ({ workout, onWorkoutUpdate }) => {
         let totalSets = 0;
 
         workout.lifts.forEach(lift => {
-            const progress = exerciseProgress[lift.id] || { passedSets: [], failedSets: [] };
+            const progress = liftProgress[lift.id] || { passedSets: [], failedSets: [] };
             totalAttemptedSets += progress.passedSets.length + progress.failedSets.length;
             totalSets += lift.sets;
         });
@@ -145,35 +131,41 @@ const ActiveWorkoutView = ({ workout, onWorkoutUpdate }) => {
 
     return (
         <>
-            <WorkoutHeader 
-                title={workout.splitName || 'Workout'}
-                day={workout.day}
-                rightContent={
-                    <Button
+        <div className="d-flex align-items-center mb-4">
+            <Button 
+                variant="outline-primary"
+                onClick={() => navigate(-1)}
+                className="me-3"
+            >
+                Back
+            </Button>
+            <h2 className="flex-grow-1 mb-0 text-center">
+                {workout.splitName} - Day {workout.day}
+            </h2>
+            <Button
                         variant="primary"
                         onClick={() => setEditable(!editable)}
                         className="ms-3"
                         disabled={isSubmitting}
                     >
                         {editable ? 'Save Changes' : 'Edit Weights'}
-                    </Button>
-                }
-            />
+            </Button>
+        </div>
 
             <ProgressSection 
                 progress={calculateOverallProgress()}
                 isComplete={isWorkoutComplete}
-                passedSets={Object.values(exerciseProgress).reduce((total, curr) => 
+                passedSets={Object.values(liftProgress).reduce((total, curr) => 
                     total + (curr.passedSets?.length || 0), 0)}
-                failedSets={Object.values(exerciseProgress).reduce((total, curr) => 
+                failedSets={Object.values(liftProgress).reduce((total, curr) => 
                     total + (curr.failedSets?.length || 0), 0)}
             />
 
-            {workout.lifts.map((exercise) => (
-                <ExerciseCard
-                    key={exercise.id}
-                    exercise={exercise}
-                    progress={exerciseProgress[exercise.id]}
+            {workout.lifts.map((lift) => (
+                <LiftCard
+                    key={lift.id}
+                    lift={lift}
+                    progress={liftProgress[lift.id]}
                     onSetComplete={handleSetComplete}
                     onWeightUpdate={handleWeightUpdate}
                     editable={editable}

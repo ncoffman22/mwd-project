@@ -5,7 +5,6 @@ const ProgressSection = ({ progress, isComplete, passedSets = 0, failedSets = 0 
     const totalAttempted = passedSets + failedSets;
     const successRate = totalAttempted > 0 ? Math.round((passedSets / totalAttempted) * 100) : 0;
 
-    // Return a Card component with a title, ProgressBar, and some stats
     return (
         <Card className="mb-4">
             <Card.Body>
