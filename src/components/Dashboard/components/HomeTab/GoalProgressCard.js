@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, ProgressBar, Row, Col, Badge } from 'react-bootstrap';
-import { Line } from 'recharts';
+import { Line, ResponsiveContainer } from 'recharts';
 
 const GoalProgressCard = ({ goalValue, liftName, liftId, stats }) => {
     // Function to filter stats and prepare oneRM data
@@ -46,7 +46,7 @@ const GoalProgressCard = ({ goalValue, liftName, liftId, stats }) => {
     };
 
     return (
-        <Card className="mb-3">
+        <Card className="mb-3" key={liftId}>
             <Card.Body>
                 <Card.Title>
                     <h5>{liftName}</h5>
@@ -55,7 +55,9 @@ const GoalProgressCard = ({ goalValue, liftName, liftId, stats }) => {
                 <ProgressBar now={progressPercentage} label={`${Math.round(progressPercentage)}%`} className="mt-3" />
                 <Row className="mt-3">
                     <Col>
+                    <ResponsiveContainer width="100%" height={'1vh'}>
                         <Line data={chartData} options={{ responsive: true }} />
+                    </ResponsiveContainer>
                     </Col>
                 </Row>
             </Card.Body>
