@@ -18,7 +18,6 @@ const GoalProgressCard = ({ goalValue, liftName, liftId, stats }) => {
                 liftType: stat.liftType?.id
             }))
         );
-        console.log(oneRMData);
         // Sort by date
         oneRMData.sort((a, b) => new Date(a.date) - new Date(b.date));
         return oneRMData;
