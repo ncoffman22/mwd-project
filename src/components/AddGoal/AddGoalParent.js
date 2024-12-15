@@ -39,7 +39,7 @@ const AddGoalParent = () => {
             }
         };
         loadData();
-    }, []);
+    }, [user]);
 
     // handler to update the goal
     const handleGoalChange = (liftTypeId, value) => {

@@ -42,7 +42,7 @@ const accountService = {
             user.set("birthday", birthday);
             user.set("height", parseInt(profileData["height"]));
             user.set("bodweight", parseInt(profileData["weight"]));
-            user.set("sex", profileData["birthSex"]=="male" ? true : false);
+            user.set("sex", profileData["birthSex"]==="male" ? true : false);
             user.set("default", profileData["defaultSplit"])
             // Send the 
             const result = await user.save();

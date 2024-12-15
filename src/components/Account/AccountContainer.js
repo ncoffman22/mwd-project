@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Container, Button } from 'react-bootstrap';
+import { Card, Container } from 'react-bootstrap';
 import AccountPicture from './AccountPicture';
 import AccountEdit from './AccountEdit';
 import AccountDisplay from './AccountDisplay';
