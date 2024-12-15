@@ -144,7 +144,7 @@ const AdvancedStatsChild = ({ statistics = [] }) => {
                                 <Card.Header>Progress Rate (lbs/day)</Card.Header>
                                 <Card.Body>
                                     <div style={{ height: 300 }}>
-                                        <ResponsiveContainer>
+                                        <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={getProgressRate()} layout="vertical">
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis type="number" />
@@ -166,7 +166,7 @@ const AdvancedStatsChild = ({ statistics = [] }) => {
                                 <Card.Header>Strength Analysis</Card.Header>
                                 <Card.Body>
                                     <div style={{ height: 300 }}>
-                                        <ResponsiveContainer>
+                                        <ResponsiveContainer width="100%" height="100%">
                                             <RadarChart data={getStrengthProfile()}>
                                                 <PolarGrid stroke="#e5e5e5" />
                                                 <PolarAngleAxis 
@@ -213,7 +213,7 @@ const AdvancedStatsChild = ({ statistics = [] }) => {
                                 <Card.Header>Weekly Training Pattern</Card.Header>
                                 <Card.Body>
                                     <div style={{ height: 300 }}>
-                                        <ResponsiveContainer>
+                                        <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={getWorkoutFrequency()}>
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="day" />
@@ -236,7 +236,7 @@ const AdvancedStatsChild = ({ statistics = [] }) => {
                                 <Card.Header>Volume Intensity Trends</Card.Header>
                                 <Card.Body>
                                     <div style={{ height: 300 }}>
-                                        <ResponsiveContainer>
+                                        <ResponsiveContainer width="100%" height="100%">
                                             <LineChart data={getVolumeIntensity()}>
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="date" />

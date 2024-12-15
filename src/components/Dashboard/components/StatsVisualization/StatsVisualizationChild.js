@@ -119,7 +119,7 @@ const StatsVisualizationChild = ({ statistics }) => {
                                         <Card.Header>Volume Progression</Card.Header>
                                         <Card.Body>
                                             <div style={{ height: 300 }}>
-                                                <ResponsiveContainer>
+                                                <ResponsiveContainer width="100%" height="100%">
                                                     <BarChart data={getVolumeData()}>
                                                         <CartesianGrid strokeDasharray="3 3" />
                                                         <XAxis dataKey="date" />
@@ -142,7 +142,7 @@ const StatsVisualizationChild = ({ statistics }) => {
                                         <Card.Header>Exercise Distribution</Card.Header>
                                         <Card.Body>
                                             <div style={{ height: '30vh' }}>
-                                                <ResponsiveContainer>
+                                                <ResponsiveContainer width="100%" height="100%">
                                                     <PieChart>
                                                         <Pie
                                                             data={getExerciseDistribution()}
@@ -192,7 +192,7 @@ const StatsVisualizationChild = ({ statistics }) => {
                                 <Card.Header>1RM Progress Over Time</Card.Header>
                                 <Card.Body>
                                     <div style={{ height: 300 }}>
-                                        <ResponsiveContainer>
+                                        <ResponsiveContainer width="100%" height="100%">
                                             <LineChart data={getOneRMData()}>
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="date" />

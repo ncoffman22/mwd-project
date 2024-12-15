@@ -1,6 +1,5 @@
 import React from 'react';
-import { Card, ProgressBar, Row, Col, Badge } from 'react-bootstrap';
-import { Line } from 'recharts';
+import { Card, ProgressBar, Badge } from 'react-bootstrap';
 
 const GoalProgressCard = ({ goalValue, liftName, liftId, stats }) => {
     // Function to filter stats and prepare oneRM data
@@ -18,7 +17,6 @@ const GoalProgressCard = ({ goalValue, liftName, liftId, stats }) => {
                 liftType: stat.liftType?.id
             }))
         );
-        console.log(oneRMData);
         // Sort by date
         oneRMData.sort((a, b) => new Date(a.date) - new Date(b.date));
         return oneRMData;
@@ -32,33 +30,15 @@ const GoalProgressCard = ({ goalValue, liftName, liftId, stats }) => {
     // Calculate progress as a percentage
     const progressPercentage = goalValue ? Math.min((currentMax / goalValue) * 100, 100) : 0;
 
-    // Prepare data for the chart
-    const chartData = {
-        labels: oneRMData.map(item => item.date),
-        datasets: [
-            {
-                label: 'OneRM Progression',
-                data: oneRMData.map(item => item.weight),
-                fill: false,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                tension: 0.1,
-            },
-        ],
-    };
 
     return (
-        <Card className="mb-3">
+        <Card className="mb-3" key={liftId}>
             <Card.Body>
                 <Card.Title>
                     <h5>{liftName}</h5>
                 </Card.Title>
                 <Badge bg="secondary">Goal: {goalValue} lbs</Badge>
                 <ProgressBar now={progressPercentage} label={`${Math.round(progressPercentage)}%`} className="mt-3" />
-                <Row className="mt-3">
-                    <Col>
-                        <Line data={chartData} options={{ responsive: true }} />
-                    </Col>
-                </Row>
             </Card.Body>
         </Card>
     );
